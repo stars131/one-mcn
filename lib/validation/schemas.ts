@@ -27,7 +27,8 @@ export const ipProfileSchema = z.object({
   monetizationGoals: z.array(z.string()).default([]),
   keywords: z.array(z.string()).default([]),
   competitors: z.array(z.string()).default([]),
-  blockedTopics: z.array(z.string()).default([])
+  blockedTopics: z.array(z.string()).default([]),
+  notes: z.array(z.string()).default([])
 });
 export const hotTopicSchema = z.object({ title: z.string().min(1), summary: z.string().optional(), url: z.string().optional(), platform: z.string().optional(), sourceName: z.string().default("Manual"), sourceType: z.enum(["hot_feed", "github", "rss", "api_json", "manual", "webpage"]).default("manual"), tags: z.array(z.string()).default([]) });
 export const topicSchema = z.object({ ipProfileId: z.string().optional(), hotTopicId: z.string().optional(), title: z.string().min(1), corePoint: z.string().default(""), targetAudience: z.string().default(""), userPainPoint: z.string().default(""), platform: z.string().default("小红书"), contentType: z.string().default("图文"), status: z.string().optional(), trafficScore: z.number().optional(), businessScore: z.number().optional(), difficultyScore: z.number().optional(), reason: z.string().optional(), outline: z.array(z.unknown()).default([]) });

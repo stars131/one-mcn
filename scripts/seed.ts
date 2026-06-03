@@ -1,12 +1,13 @@
 import { prisma } from "@/lib/db/prisma";
 import { ensureBootstrapInvite } from "@/lib/auth/invite";
+import { hashPassword } from "@/lib/auth/password";
 
 async function main() {
   await ensureBootstrapInvite();
   const user = await prisma.user.upsert({
     where: { email: "demo@one-mcn.local" },
-    update: { activatedAt: new Date() },
-    create: { email: "demo@one-mcn.local", name: "Demo Creator", activatedAt: new Date() }
+    update: { activatedAt: new Date(), passwordHash: hashPassword("one-mcn-demo") },
+    create: { email: "demo@one-mcn.local", name: "Demo Creator", activatedAt: new Date(), passwordHash: hashPassword("one-mcn-demo") }
   });
   const profile = await prisma.ipProfile.create({
     data: {

@@ -12,6 +12,7 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
   const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
+  const [password, setPassword] = useState("");
   const [inviteCode, setInviteCode] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
@@ -25,7 +26,7 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
       const res = await fetch(`/api/auth/${mode}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, name: isRegister ? name : undefined, inviteCode })
+        body: JSON.stringify({ email, password, name: isRegister ? name : undefined, inviteCode: isRegister ? inviteCode : undefined })
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "操作失败");
@@ -51,9 +52,15 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
         <Input required type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="you@example.com" />
       </label>
       <label className="block space-y-2 text-sm">
-        <span className="text-muted-foreground">邀请码</span>
-        <Input required value={inviteCode} onChange={(event) => setInviteCode(event.target.value)} placeholder="请输入邀请码" />
+        <span className="text-muted-foreground">密码</span>
+        <Input required type="password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder={isRegister ? "至少 8 位" : "请输入密码"} />
       </label>
+      {isRegister ? (
+        <label className="block space-y-2 text-sm">
+          <span className="text-muted-foreground">邀请码</span>
+          <Input required value={inviteCode} onChange={(event) => setInviteCode(event.target.value)} placeholder="请输入邀请码" />
+        </label>
+      ) : null}
       <Button className="h-11 w-full rounded-full" disabled={loading}>
         {loading ? "处理中..." : isRegister ? "创建账号" : "登录工作台"}
         <ArrowRight className="h-4 w-4" />

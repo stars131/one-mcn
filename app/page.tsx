@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, BarChart3, CheckCircle2, Flame, Layers3, LockKeyhole, PenLine, Radar, Sparkles } from "lucide-react";
+import { ArrowRight, BarChart3, CheckCircle2, Layers3, LockKeyhole, PenLine, Radar, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BrandIcon } from "@/components/brand-icon";
 
@@ -20,7 +20,7 @@ const detailSections = [
 export default function HomePage() {
   return (
     <main className="min-h-screen overflow-hidden bg-[#f7f4ed] text-[#1d1b18]">
-      <header className="mx-auto flex h-16 max-w-7xl items-center justify-between px-5">
+      <header className="mx-auto flex h-14 max-w-7xl items-center justify-between px-5">
         <Link href="/" className="flex items-center gap-3 font-semibold">
           <BrandIcon className="h-9 w-9" />
           小八的后援团
@@ -35,32 +35,32 @@ export default function HomePage() {
         </nav>
       </header>
 
-      <section className="relative mx-auto grid min-h-[calc(100vh-64px)] max-w-7xl items-center gap-6 px-5 pb-8 pt-3 lg:grid-cols-[minmax(0,1fr)_420px]">
-        <div className="absolute left-1/2 top-16 h-72 w-72 -translate-x-1/2 rounded-full bg-[#0f8b8d]/10 blur-3xl" />
+      <section className="relative mx-auto grid min-h-[calc(100vh-56px)] max-w-7xl items-center gap-5 px-5 pb-4 pt-0 lg:grid-cols-[minmax(0,1fr)_360px]">
+        <div className="absolute left-1/2 top-12 h-64 w-64 -translate-x-1/2 rounded-full bg-[#0f8b8d]/10 blur-3xl" />
         <div className="relative">
-          <div className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/70 px-4 py-2 text-sm text-[#6c6258] shadow-sm backdrop-blur">
+          <div className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/70 px-3 py-1.5 text-sm text-[#6c6258] shadow-sm backdrop-blur">
             <Sparkles className="h-4 w-4 text-[#0f8b8d]" />
             你的专属MCN，已就位
           </div>
-          <h1 className="mt-6 max-w-4xl text-5xl font-semibold leading-[1.05] tracking-tight sm:text-6xl lg:text-7xl">
+          <h1 className="mt-4 max-w-4xl text-4xl font-semibold leading-[1.04] tracking-tight sm:text-5xl lg:text-[3.35rem]">
             小八的后援团。
             <span className="block text-[#0f8b8d]">你的专属MCN，已就位。</span>
           </h1>
-          <p className="mt-5 max-w-2xl text-lg leading-8 text-[#625a50]">
+          <p className="mt-3 max-w-2xl text-base leading-7 text-[#625a50]">
             把 IP 定位、热点发现、AI 选题、内容生成、发布计划和数据复盘收拢到一个清晰的运营闭环里。
           </p>
-          <div className="mt-7 flex flex-wrap items-center gap-3">
-            <Button asChild className="h-11 rounded-full px-5">
+          <div className="mt-4 flex flex-wrap items-center gap-3">
+            <Button asChild className="h-10 rounded-full px-5">
               <Link href="/register">
                 使用邀请码进入
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </Button>
-            <Button asChild variant="outline" className="h-11 rounded-full bg-white/70 px-5">
+            <Button asChild variant="outline" className="h-10 rounded-full bg-white/70 px-5">
               <Link href="/login">已有账号登录</Link>
             </Button>
           </div>
-          <div className="mt-6 grid gap-2 text-sm text-[#6c6258] sm:grid-cols-2">
+          <div className="mt-4 grid gap-2 text-sm text-[#6c6258] sm:grid-cols-2">
             {["用户审核确认", "不做违规爬虫", "支持多平台内容", "可扩展 Agent 工作流"].map((item) => (
               <span key={item} className="inline-flex items-center gap-2">
                 <CheckCircle2 className="h-4 w-4 text-[#0f8b8d]" />
@@ -71,8 +71,8 @@ export default function HomePage() {
         </div>
 
         <div className="relative">
-          <div className="rounded-[2rem] border border-white/80 bg-white/75 p-3 shadow-2xl shadow-[#4a3828]/15 backdrop-blur">
-            <div className="rounded-[1.5rem] bg-[#4a3828] p-4 text-white">
+          <div className="rounded-[1.5rem] border border-white/80 bg-white/75 p-3 shadow-2xl shadow-[#4a3828]/15 backdrop-blur">
+            <div className="rounded-[1.15rem] bg-[#4a3828] p-4 text-white">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <BrandIcon className="h-11 w-11 bg-white text-[#4a3828]" />
@@ -83,30 +83,24 @@ export default function HomePage() {
                 </div>
                 <LockKeyhole className="h-5 w-5 text-white/50" />
               </div>
-              <div className="mt-4 space-y-3">
+              <div className="mt-4 grid gap-2">
                 {[
-                  ["热点入口", "已接入标准热点 URL", Flame],
-                  ["推荐选题", "一个人如何搭建内容增长闭环", Sparkles],
-                  ["复盘提醒", "收藏率高，适合继续做工具型内容", BarChart3]
-                ].map(([title, text, Icon]) => (
-                  <div key={title as string} className="rounded-2xl bg-white/10 p-3">
-                    <div className="flex items-center gap-2 text-sm font-medium">
-                      <Icon className="h-4 w-4" />
-                      {title as string}
-                    </div>
-                    <p className="mt-2 text-sm leading-6 text-white/70">{text as string}</p>
+                  ["IP 上下文", "持续沉淀"],
+                  ["热点入口", "URL 接入"],
+                  ["内容复盘", "下一轮建议"]
+                ].map(([title, text]) => (
+                  <div key={title} className="flex items-center justify-between rounded-2xl bg-white/10 px-3 py-2.5">
+                    <div className="text-sm font-medium">{title}</div>
+                    <p className="text-xs text-white/65">{text as string}</p>
                   </div>
                 ))}
               </div>
             </div>
-            <div className="grid gap-2 p-2 pt-3">
+            <div className="grid grid-cols-2 gap-2 p-2 pt-3">
               {features.map((feature) => (
-                <div key={feature.title} className="flex items-start gap-3 rounded-2xl border bg-[#fbfaf7] p-3">
-                  <feature.icon className="mt-1 h-5 w-5 text-[#0f8b8d]" />
-                  <div>
-                    <p className="font-medium">{feature.title}</p>
-                    <p className="mt-1 text-sm leading-6 text-[#6c6258]">{feature.text}</p>
-                  </div>
+                <div key={feature.title} className="flex h-16 flex-col justify-center rounded-2xl border bg-[#fbfaf7] px-3">
+                  <feature.icon className="h-4 w-4 text-[#0f8b8d]" />
+                  <p className="mt-1 text-sm font-medium">{feature.title}</p>
                 </div>
               ))}
             </div>

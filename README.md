@@ -38,10 +38,12 @@ npm run dev
 
 ```bash
 DATABASE_URL="postgresql://postgres:postgres@localhost:5432/one_mcn?schema=public"
-AI_PROVIDER="openrouter"
+AI_PROVIDER="newapi"
 AI_API_KEY=""
-AI_BASE_URL=""
-AI_MODEL="gpt-4o-mini"
+AI_BASE_URL="https://zapi.aicc0.com/v1"
+AI_TEXT_MODEL="gpt-4o-mini"
+AI_MULTIMODAL_MODEL="gpt-4o-mini"
+AI_IMAGE_MODEL="gpt-image-1"
 GITHUB_TOKEN=""
 INITIAL_INVITE_CODE="ONE-MCN-2026"
 ```

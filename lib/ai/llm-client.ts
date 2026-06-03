@@ -7,14 +7,26 @@ function providerConfig() {
   const apiKey = process.env.AI_API_KEY;
   const baseUrl =
     process.env.AI_BASE_URL ||
-    (provider === "deepseek"
+    (provider === "newapi"
+      ? "https://zapi.aicc0.com/v1"
+      : provider === "deepseek"
       ? "https://api.deepseek.com"
       : provider === "openrouter"
         ? "https://openrouter.ai/api/v1"
         : "https://api.openai.com/v1");
-  const model = process.env.AI_MODEL || (provider === "deepseek" ? "deepseek-chat" : "gpt-4o-mini");
+  const model = process.env.AI_TEXT_MODEL || process.env.AI_MODEL || (provider === "deepseek" ? "deepseek-chat" : "gpt-4o-mini");
   if (!apiKey) throw new Error("缺少 AI_API_KEY，请在环境变量中配置 OpenAI/OpenRouter/DeepSeek API Key");
   return { provider, apiKey, baseUrl, model };
+}
+
+export function getModelConfig() {
+  return {
+    provider: process.env.AI_PROVIDER || "newapi",
+    textModel: process.env.AI_TEXT_MODEL || process.env.AI_MODEL || "gpt-4o-mini",
+    multimodalModel: process.env.AI_MULTIMODAL_MODEL || "gpt-4o-mini",
+    imageModel: process.env.AI_IMAGE_MODEL || "gpt-image-1",
+    baseUrl: process.env.AI_BASE_URL || "https://zapi.aicc0.com/v1"
+  };
 }
 
 export async function generateText(messages: Message[], options?: { temperature?: number }) {
