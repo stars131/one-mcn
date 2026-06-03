@@ -1,0 +1,289 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                 String              @id @default(cuid())
+  email              String              @unique
+  name               String?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  ipProfiles         IpProfile[]
+  sources            Source[]
+  hotTopics          HotTopic[]
+  topics             Topic[]
+  contents           Content[]
+  publishRecords     PublishRecord[]
+  contentMetrics     ContentMetric[]
+  analyticsSnapshots AnalyticsSnapshot[]
+  reviewReports      ReviewReport[]
+}
+
+model IpProfile {
+  id                String     @id @default(cuid())
+  userId            String
+  name              String
+  niche             String
+  targetAudience    String
+  userPainPoints    Json       @default("[]")
+  valueProposition  String
+  toneStyle         String
+  platforms         Json       @default("[]")
+  monetizationGoals Json       @default("[]")
+  keywords          Json       @default("[]")
+  competitors       Json       @default("[]")
+  blockedTopics     Json       @default("[]")
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+  user              User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  hotTopics         HotTopic[]
+  topics            Topic[]
+}
+
+model Source {
+  id        String       @id @default(cuid())
+  userId    String
+  name      String
+  type      SourceType
+  url       String?
+  enabled   Boolean      @default(true)
+  config    Json         @default("{}")
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items     SourceItem[]
+  hotTopics HotTopic[]
+  fetchJobs FetchJob[]
+}
+
+model SourceItem {
+  id          String    @id @default(cuid())
+  sourceId    String
+  externalId  String?
+  title       String
+  summary     String?
+  url         String?
+  author      String?
+  publishedAt DateTime?
+  rawMetrics  Json      @default("{}")
+  rawData     Json      @default("{}")
+  createdAt   DateTime  @default(now())
+  source      Source    @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+
+  @@index([sourceId])
+}
+
+model FetchJob {
+  id           String     @id @default(cuid())
+  sourceId     String
+  sourceName   String
+  status       JobStatus
+  startedAt    DateTime
+  finishedAt   DateTime?
+  itemCount    Int        @default(0)
+  errorMessage String?
+  params       Json       @default("{}")
+  createdAt    DateTime   @default(now())
+  source       Source     @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+}
+
+model HotTopic {
+  id                  String     @id @default(cuid())
+  userId              String
+  ipProfileId         String?
+  sourceId            String?
+  title               String
+  summary             String?
+  url                 String?
+  platform            String?
+  sourceName          String
+  sourceType          SourceType
+  keyword             String?
+  tags                Json       @default("[]")
+  heatScore           Float      @default(0)
+  matchScore          Float      @default(0)
+  businessScore       Float      @default(0)
+  competitionScore    Float      @default(0)
+  freshnessScore      Float      @default(0)
+  recommendationScore Float      @default(0)
+  recommendedAngles   Json       @default("[]")
+  suitablePlatforms   Json       @default("[]")
+  contentFormats      Json       @default("[]")
+  status              TopicStatus @default(new)
+  rawMetrics          Json       @default("{}")
+  rawData             Json       @default("{}")
+  collectedAt         DateTime   @default(now())
+  analyzedAt          DateTime?
+  createdAt           DateTime   @default(now())
+  updatedAt           DateTime   @updatedAt
+  user                User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ipProfile           IpProfile? @relation(fields: [ipProfileId], references: [id], onDelete: SetNull)
+  source              Source?    @relation(fields: [sourceId], references: [id], onDelete: SetNull)
+  topics              Topic[]
+}
+
+model Topic {
+  id              String       @id @default(cuid())
+  userId          String
+  ipProfileId     String?
+  hotTopicId      String?
+  title           String
+  corePoint       String
+  targetAudience  String
+  userPainPoint   String
+  platform        String
+  contentType     String
+  status          ContentStatus @default(draft)
+  trafficScore    Float        @default(0)
+  businessScore   Float        @default(0)
+  difficultyScore Float        @default(0)
+  reason          String?
+  outline         Json         @default("[]")
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ipProfile       IpProfile?   @relation(fields: [ipProfileId], references: [id], onDelete: SetNull)
+  hotTopic        HotTopic?    @relation(fields: [hotTopicId], references: [id], onDelete: SetNull)
+  contents        Content[]
+}
+
+model Content {
+  id           String          @id @default(cuid())
+  userId       String
+  topicId      String?
+  platform     String
+  contentType  String
+  title        String
+  titles       Json            @default("[]")
+  coverTexts   Json            @default("[]")
+  hook         String?
+  body         String
+  cta          String?
+  tags         Json            @default("[]")
+  commentGuide String?
+  status       PublishStatus   @default(draft)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  user         User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  topic        Topic?          @relation(fields: [topicId], references: [id], onDelete: SetNull)
+  publishRecords PublishRecord[]
+  metrics      ContentMetric[]
+}
+
+model PublishRecord {
+  id           String       @id @default(cuid())
+  userId       String
+  contentId    String
+  platform     String
+  plannedAt    DateTime?
+  publishedAt  DateTime?
+  publishedUrl String?
+  status       PublishStatus @default(planned)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content      Content      @relation(fields: [contentId], references: [id], onDelete: Cascade)
+}
+
+model ContentMetric {
+  id              String   @id @default(cuid())
+  userId          String
+  contentId       String
+  platform        String
+  views           Int      @default(0)
+  likes           Int      @default(0)
+  comments        Int      @default(0)
+  saves           Int      @default(0)
+  shares          Int      @default(0)
+  followersGained Int      @default(0)
+  completionRate  Float    @default(0)
+  clickRate       Float    @default(0)
+  avgWatchTime    Float    @default(0)
+  impressions     Int      @default(0)
+  collectedAt     DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content         Content  @relation(fields: [contentId], references: [id], onDelete: Cascade)
+}
+
+model AnalyticsSnapshot {
+  id                    String   @id @default(cuid())
+  userId                String
+  periodStart           DateTime
+  periodEnd             DateTime
+  totalContents         Int      @default(0)
+  totalViews            Int      @default(0)
+  totalLikes            Int      @default(0)
+  totalComments         Int      @default(0)
+  totalSaves            Int      @default(0)
+  totalShares           Int      @default(0)
+  totalFollowersGained  Int      @default(0)
+  avgLikeRate           Float    @default(0)
+  avgCommentRate        Float    @default(0)
+  avgSaveRate           Float    @default(0)
+  avgShareRate          Float    @default(0)
+  avgFollowerGainRate   Float    @default(0)
+  topPlatform           String?
+  topContentType        String?
+  topTopicTags          Json     @default("[]")
+  summaryData           Json     @default("{}")
+  createdAt             DateTime @default(now())
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model ReviewReport {
+  id                 String   @id @default(cuid())
+  userId             String
+  periodStart        DateTime
+  periodEnd          DateTime
+  summary            String
+  keyFindings        Json     @default("[]")
+  winningPatterns    Json     @default("[]")
+  losingPatterns     Json     @default("[]")
+  recommendedActions Json     @default("[]")
+  nextTopics         Json     @default("[]")
+  rawData            Json     @default("{}")
+  createdAt          DateTime @default(now())
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum SourceType {
+  github
+  rss
+  api_json
+  manual
+  webpage
+}
+
+enum JobStatus {
+  running
+  success
+  failed
+}
+
+enum TopicStatus {
+  new
+  analyzed
+  used
+  ignored
+}
+
+enum ContentStatus {
+  draft
+  approved
+  generating
+  archived
+}
+
+enum PublishStatus {
+  draft
+  planned
+  published
+  failed
+}
