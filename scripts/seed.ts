@@ -26,7 +26,7 @@ async function main() {
   });
   await prisma.source.createMany({
     data: [
-      { userId: user.id, name: "GitHub AI Agent", type: "github", config: { query: "AI agent" } },
+      { userId: user.id, name: "WLWL 热点接口", type: "hot_feed", url: "http://127.0.0.1:4100/api/hot-topics", config: { name: "WLWL Hotspot Collector" } },
       { userId: user.id, name: "手动热点", type: "manual", config: {} }
     ],
     skipDuplicates: true

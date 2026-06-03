@@ -12,11 +12,12 @@ const item = (title: string, url?: string): NormalizedHotTopic => ({
 
 describe("source registry", () => {
   it("returns implemented adapters", () => {
+    expect(getSourceAdapter("hot_feed").type).toBe("hot_feed");
     expect(getSourceAdapter("github").type).toBe("github");
     expect(getSourceAdapter("rss").type).toBe("rss");
     expect(getSourceAdapter("api_json").type).toBe("api_json");
     expect(getSourceAdapter("manual").type).toBe("manual");
-    expect(listSourceAdapters().map((adapter) => adapter.type)).toEqual(["github", "rss", "api_json", "manual"]);
+    expect(listSourceAdapters().map((adapter) => adapter.type)).toEqual(["hot_feed", "github", "rss", "api_json", "manual"]);
   });
 
   it("keeps webpage reserved", () => {

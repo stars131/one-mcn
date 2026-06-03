@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { Sparkles } from "lucide-react";
+import { BrandIcon } from "@/components/brand-icon";
 
 export function AuthPageShell({ title, subtitle, children }: { title: string; subtitle: string; children: React.ReactNode }) {
   return (
     <main className="min-h-screen bg-[#f7f4ed] px-5 py-8 text-[#1d1b18]">
       <div className="mx-auto flex max-w-6xl items-center justify-between">
         <Link href="/" className="flex items-center gap-3 font-semibold">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#4a3828] text-white">助</span>
+          <BrandIcon className="h-9 w-9" />
           小八的后援团
         </Link>
       </div>

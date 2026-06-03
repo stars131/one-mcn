@@ -1,10 +1,12 @@
 import { apiJsonAdapter } from "./api-json-adapter";
 import { githubAdapter } from "./github-adapter";
+import { hotFeedAdapter } from "./hot-feed-adapter";
 import { manualAdapter } from "./manual-adapter";
 import { rssAdapter } from "./rss-adapter";
 import { SourceAdapter, SourceType } from "./types";
 
 const adapters: Record<SourceType, SourceAdapter | undefined> = {
+  hot_feed: hotFeedAdapter,
   github: githubAdapter,
   rss: rssAdapter,
   api_json: apiJsonAdapter,

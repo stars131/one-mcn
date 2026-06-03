@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { BarChart3, CalendarDays, FileText, Flame, Gauge, PenLine, Radar, Settings, Sparkles, UserRound } from "lucide-react";
 import { LogoutButton } from "@/components/logout-button";
+import { BrandIcon } from "@/components/brand-icon";
 
 const nav = [
   { href: "/dashboard", label: "仪表盘", icon: Gauge },
@@ -20,7 +21,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(15,139,141,0.08),transparent_32rem)]">
       <aside className="fixed inset-y-0 left-0 hidden w-64 border-r bg-white/90 px-3 py-4 backdrop-blur lg:block">
         <Link href="/dashboard" className="mb-5 flex items-center gap-3 px-2 text-lg font-semibold">
-          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#4a3828] text-primary-foreground">助</span>
+          <BrandIcon className="h-9 w-9 rounded-lg" />
           <span>
             小八的后援团
             <span className="block text-xs font-normal text-muted-foreground">你的专属MCN，已就位</span>

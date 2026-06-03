@@ -1,4 +1,4 @@
-export type SourceType = "github" | "rss" | "api_json" | "manual" | "webpage";
+export type SourceType = "hot_feed" | "github" | "rss" | "api_json" | "manual" | "webpage";
 
 export type RawSourceItem = {
   externalId?: string;

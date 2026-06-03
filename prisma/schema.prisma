@@ -279,6 +279,7 @@ model ReviewReport {
 }
 
 enum SourceType {
+  hot_feed
   github
   rss
   api_json
