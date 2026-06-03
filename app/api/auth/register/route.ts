@@ -10,9 +10,10 @@ import { hashPassword } from "@/lib/auth/password";
 const registerSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8, "密码至少 8 位"),
+  confirmPassword: z.string().min(8, "确认密码至少 8 位"),
   inviteCode: z.string().min(4),
   name: z.string().optional()
-});
+}).refine((body) => body.password === body.confirmPassword, { path: ["confirmPassword"], message: "两次输入的密码不一致" });
 
 export async function POST(request: Request) {
   try {
@@ -28,6 +29,13 @@ export async function POST(request: Request) {
       create: { email, name: body.name, passwordHash, activatedAt: new Date() }
     });
     await consumeInviteCode(body.inviteCode);
+    await prisma.operatingAccount.create({
+      data: {
+        userId: user.id,
+        name: body.name ? `${body.name}的运营账号` : "默认运营账号",
+        platform: "综合"
+      }
+    });
     await createAuthSession(user.id);
     return ok({ user: { id: user.id, email: user.email, name: user.name } });
   } catch (error) {

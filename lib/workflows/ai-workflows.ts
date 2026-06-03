@@ -51,11 +51,12 @@ export async function analyzeHotTopicWorkflow(input: { hotTopicId: string; ipPro
 export async function generateTopicsWorkflow(input: { hotTopicId: string; ipProfileId: string }) {
   const hotTopic = await prisma.hotTopic.findUniqueOrThrow({ where: { id: input.hotTopicId } });
   const ipProfile = await prisma.ipProfile.findUniqueOrThrow({ where: { id: input.ipProfileId } });
-  const history = await prisma.contentMetric.findMany({ where: { userId: hotTopic.userId }, include: { content: true }, orderBy: { views: "desc" }, take: 10 });
+  const history = await prisma.contentMetric.findMany({ where: { userId: hotTopic.userId, operatingAccountId: hotTopic.operatingAccountId }, include: { content: true }, orderBy: { views: "desc" }, take: 10 });
   const items = await generateJson<any[]>([{ role: "user", content: prompts.topicGeneration({ hotTopic, ipProfile, history }) }]);
   return prisma.topic.createManyAndReturn({
     data: items.slice(0, 10).map((item) => ({
       userId: hotTopic.userId,
+      operatingAccountId: hotTopic.operatingAccountId,
       ipProfileId: ipProfile.id,
       hotTopicId: hotTopic.id,
       title: String(item.title),
@@ -79,6 +80,7 @@ export async function generateContentWorkflow(input: { topicId: string; platform
   return prisma.content.create({
     data: {
       userId: topic.userId,
+      operatingAccountId: topic.operatingAccountId,
       topicId: topic.id,
       platform: input.platform,
       contentType: input.contentType,
@@ -100,6 +102,7 @@ export async function adaptContentWorkflow(input: { contentId: string; targetPla
   return prisma.content.create({
     data: {
       userId: content.userId,
+      operatingAccountId: content.operatingAccountId,
       topicId: content.topicId,
       platform: input.targetPlatform,
       contentType: content.contentType,

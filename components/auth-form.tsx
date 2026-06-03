@@ -13,6 +13,7 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [inviteCode, setInviteCode] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
@@ -23,10 +24,13 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
     setLoading(true);
     setMessage("");
     try {
+      if (isRegister && password !== confirmPassword) {
+        throw new Error("两次输入的密码不一致");
+      }
       const res = await fetch(`/api/auth/${mode}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, name: isRegister ? name : undefined, inviteCode: isRegister ? inviteCode : undefined })
+        body: JSON.stringify({ email, password, confirmPassword: isRegister ? confirmPassword : undefined, name: isRegister ? name : undefined, inviteCode: isRegister ? inviteCode : undefined })
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "操作失败");
@@ -44,21 +48,27 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
       {isRegister ? (
         <label className="block space-y-2 text-sm">
           <span className="text-muted-foreground">你的名字</span>
-          <Input value={name} onChange={(event) => setName(event.target.value)} placeholder="例如：周同学" />
+          <Input name="name" autoComplete="name" value={name} onChange={(event) => setName(event.target.value)} placeholder="例如：周同学" />
         </label>
       ) : null}
       <label className="block space-y-2 text-sm">
         <span className="text-muted-foreground">邮箱</span>
-        <Input required type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="you@example.com" />
+        <Input required name="email" autoComplete="email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="you@example.com" />
       </label>
       <label className="block space-y-2 text-sm">
         <span className="text-muted-foreground">密码</span>
-        <Input required type="password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder={isRegister ? "至少 8 位" : "请输入密码"} />
+        <Input required name="password" autoComplete={isRegister ? "new-password" : "current-password"} type="password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder={isRegister ? "至少 8 位" : "请输入密码"} />
       </label>
       {isRegister ? (
         <label className="block space-y-2 text-sm">
+          <span className="text-muted-foreground">确认密码</span>
+          <Input required name="confirmPassword" autoComplete="new-password" type="password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} placeholder="再次输入密码" />
+        </label>
+      ) : null}
+      {isRegister ? (
+        <label className="block space-y-2 text-sm">
           <span className="text-muted-foreground">邀请码</span>
-          <Input required value={inviteCode} onChange={(event) => setInviteCode(event.target.value)} placeholder="请输入邀请码" />
+          <Input required name="inviteCode" autoComplete="one-time-code" value={inviteCode} onChange={(event) => setInviteCode(event.target.value)} placeholder="请输入邀请码" />
         </label>
       ) : null}
       <Button className="h-11 w-full rounded-full" disabled={loading}>

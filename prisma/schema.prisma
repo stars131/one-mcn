@@ -16,6 +16,7 @@ model User {
   createdAt          DateTime            @default(now())
   updatedAt          DateTime            @updatedAt
   sessions           AuthSession[]
+  operatingAccounts  OperatingAccount[]
   ipProfiles         IpProfile[]
   sources            Source[]
   hotTopics          HotTopic[]
@@ -25,6 +26,31 @@ model User {
   contentMetrics     ContentMetric[]
   analyticsSnapshots AnalyticsSnapshot[]
   reviewReports      ReviewReport[]
+}
+
+model OperatingAccount {
+  id                 String              @id @default(cuid())
+  userId             String
+  name               String
+  platform           String?
+  handle             String?
+  description        String?
+  avatarUrl          String?
+  status             String              @default("active")
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ipProfiles         IpProfile[]
+  sources            Source[]
+  hotTopics          HotTopic[]
+  topics             Topic[]
+  contents           Content[]
+  publishRecords     PublishRecord[]
+  contentMetrics     ContentMetric[]
+  analyticsSnapshots AnalyticsSnapshot[]
+  reviewReports      ReviewReport[]
+
+  @@index([userId])
 }
 
 model InviteCode {
@@ -53,6 +79,7 @@ model AuthSession {
 model IpProfile {
   id                String     @id @default(cuid())
   userId            String
+  operatingAccountId String?
   name              String
   niche             String
   targetAudience    String
@@ -68,13 +95,17 @@ model IpProfile {
   createdAt         DateTime   @default(now())
   updatedAt         DateTime   @updatedAt
   user              User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  operatingAccount  OperatingAccount? @relation(fields: [operatingAccountId], references: [id], onDelete: SetNull)
   hotTopics         HotTopic[]
   topics            Topic[]
+
+  @@index([userId, operatingAccountId])
 }
 
 model Source {
   id        String       @id @default(cuid())
   userId    String
+  operatingAccountId String?
   name      String
   type      SourceType
   url       String?
@@ -83,9 +114,12 @@ model Source {
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt
   user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  operatingAccount OperatingAccount? @relation(fields: [operatingAccountId], references: [id], onDelete: SetNull)
   items     SourceItem[]
   hotTopics HotTopic[]
   fetchJobs FetchJob[]
+
+  @@index([userId, operatingAccountId])
 }
 
 model SourceItem {
@@ -122,6 +156,7 @@ model FetchJob {
 model HotTopic {
   id                  String     @id @default(cuid())
   userId              String
+  operatingAccountId  String?
   ipProfileId         String?
   sourceId            String?
   title               String
@@ -149,14 +184,18 @@ model HotTopic {
   createdAt           DateTime   @default(now())
   updatedAt           DateTime   @updatedAt
   user                User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  operatingAccount    OperatingAccount? @relation(fields: [operatingAccountId], references: [id], onDelete: SetNull)
   ipProfile           IpProfile? @relation(fields: [ipProfileId], references: [id], onDelete: SetNull)
   source              Source?    @relation(fields: [sourceId], references: [id], onDelete: SetNull)
   topics              Topic[]
+
+  @@index([userId, operatingAccountId])
 }
 
 model Topic {
   id              String       @id @default(cuid())
   userId          String
+  operatingAccountId String?
   ipProfileId     String?
   hotTopicId      String?
   title           String
@@ -174,14 +213,18 @@ model Topic {
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
   user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  operatingAccount OperatingAccount? @relation(fields: [operatingAccountId], references: [id], onDelete: SetNull)
   ipProfile       IpProfile?   @relation(fields: [ipProfileId], references: [id], onDelete: SetNull)
   hotTopic        HotTopic?    @relation(fields: [hotTopicId], references: [id], onDelete: SetNull)
   contents        Content[]
+
+  @@index([userId, operatingAccountId])
 }
 
 model Content {
   id           String          @id @default(cuid())
   userId       String
+  operatingAccountId String?
   topicId      String?
   platform     String
   contentType  String
@@ -197,14 +240,18 @@ model Content {
   createdAt    DateTime        @default(now())
   updatedAt    DateTime        @updatedAt
   user         User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  operatingAccount OperatingAccount? @relation(fields: [operatingAccountId], references: [id], onDelete: SetNull)
   topic        Topic?          @relation(fields: [topicId], references: [id], onDelete: SetNull)
   publishRecords PublishRecord[]
   metrics      ContentMetric[]
+
+  @@index([userId, operatingAccountId])
 }
 
 model PublishRecord {
   id           String       @id @default(cuid())
   userId       String
+  operatingAccountId String?
   contentId    String
   platform     String
   plannedAt    DateTime?
@@ -214,12 +261,16 @@ model PublishRecord {
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
   user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  operatingAccount OperatingAccount? @relation(fields: [operatingAccountId], references: [id], onDelete: SetNull)
   content      Content      @relation(fields: [contentId], references: [id], onDelete: Cascade)
+
+  @@index([userId, operatingAccountId])
 }
 
 model ContentMetric {
   id              String   @id @default(cuid())
   userId          String
+  operatingAccountId String?
   contentId       String
   platform        String
   views           Int      @default(0)
@@ -236,12 +287,16 @@ model ContentMetric {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
   user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  operatingAccount OperatingAccount? @relation(fields: [operatingAccountId], references: [id], onDelete: SetNull)
   content         Content  @relation(fields: [contentId], references: [id], onDelete: Cascade)
+
+  @@index([userId, operatingAccountId])
 }
 
 model AnalyticsSnapshot {
   id                    String   @id @default(cuid())
   userId                String
+  operatingAccountId    String?
   periodStart           DateTime
   periodEnd             DateTime
   totalContents         Int      @default(0)
@@ -262,11 +317,15 @@ model AnalyticsSnapshot {
   summaryData           Json     @default("{}")
   createdAt             DateTime @default(now())
   user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  operatingAccount      OperatingAccount? @relation(fields: [operatingAccountId], references: [id], onDelete: SetNull)
+
+  @@index([userId, operatingAccountId])
 }
 
 model ReviewReport {
   id                 String   @id @default(cuid())
   userId             String
+  operatingAccountId String?
   periodStart        DateTime
   periodEnd          DateTime
   summary            String
@@ -278,6 +337,9 @@ model ReviewReport {
   rawData            Json     @default("{}")
   createdAt          DateTime @default(now())
   user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  operatingAccount   OperatingAccount? @relation(fields: [operatingAccountId], references: [id], onDelete: SetNull)
+
+  @@index([userId, operatingAccountId])
 }
 
 enum SourceType {

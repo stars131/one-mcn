@@ -40,13 +40,14 @@ export async function collectHotTopicsWorkflow(input: {
       })) as any
     });
     const normalized = await adapter.normalize(raw);
-    const existing = await prisma.hotTopic.findMany({ where: { userId: source.userId }, select: { title: true, url: true } });
+    const existing = await prisma.hotTopic.findMany({ where: { userId: source.userId, operatingAccountId: source.operatingAccountId }, select: { title: true, url: true } });
     const unique = dedupeHotTopics(normalized, existing.map((item) => item.url || item.title));
     const created = await Promise.all(
       unique.map((item) =>
         prisma.hotTopic.create({
           data: {
             userId: source.userId,
+            operatingAccountId: source.operatingAccountId,
             sourceId: source.id,
             title: item.title,
             summary: item.summary,

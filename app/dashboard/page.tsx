@@ -4,6 +4,9 @@ import { Card, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { prisma } from "@/lib/db/prisma";
 import { getDefaultUserId } from "@/lib/db/default-user";
+import { ensureCurrentOperatingAccount } from "@/lib/accounts/current-account";
+import { OperatingAccountSwitcher } from "@/components/operating-account-switcher";
+import { BrandIcon } from "@/components/brand-icon";
 
 export const dynamic = "force-dynamic";
 
@@ -20,19 +23,22 @@ const flow = ["IP 定位", "来源采集", "热点分析", "选题策划", "内�
 
 async function loadDashboardData() {
   const userId = await getDefaultUserId();
+  const currentAccount = await ensureCurrentOperatingAccount(userId);
+  const accounts = await prisma.operatingAccount.findMany({ where: { userId }, orderBy: { createdAt: "asc" } });
+  const accountWhere = { userId, operatingAccountId: currentAccount.id };
   const [ipProfiles, sources, hotTopics, topics, contents, publishRecords, metrics, reports] = await Promise.all([
-    prisma.ipProfile.count({ where: { userId } }),
-    prisma.source.count({ where: { userId } }),
-    prisma.hotTopic.count({ where: { userId } }),
-    prisma.topic.count({ where: { userId } }),
-    prisma.content.count({ where: { userId } }),
-    prisma.publishRecord.count({ where: { userId } }),
-    prisma.contentMetric.findMany({ where: { userId }, select: { views: true, followersGained: true } }),
-    prisma.reviewReport.findFirst({ where: { userId }, orderBy: { createdAt: "desc" } })
+    prisma.ipProfile.count({ where: accountWhere }),
+    prisma.source.count({ where: accountWhere }),
+    prisma.hotTopic.count({ where: accountWhere }),
+    prisma.topic.count({ where: accountWhere }),
+    prisma.content.count({ where: accountWhere }),
+    prisma.publishRecord.count({ where: accountWhere }),
+    prisma.contentMetric.findMany({ where: accountWhere, select: { views: true, followersGained: true } }),
+    prisma.reviewReport.findFirst({ where: accountWhere, orderBy: { createdAt: "desc" } })
   ]);
   const totalViews = metrics.reduce((sum, item) => sum + item.views, 0);
   const totalFollowers = metrics.reduce((sum, item) => sum + item.followersGained, 0);
-  return { ipProfiles, sources, hotTopics, topics, contents, publishRecords, totalViews, totalFollowers, latestReport: reports };
+  return { accounts, currentAccount, ipProfiles, sources, hotTopics, topics, contents, publishRecords, totalViews, totalFollowers, latestReport: reports };
 }
 
 export default async function DashboardPage() {
@@ -50,6 +56,8 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-6">
+      <OperatingAccountSwitcher accounts={data.accounts} currentId={data.currentAccount.id} />
+
       <section className="grid gap-5 lg:grid-cols-[1fr_390px]">
         <div className="rounded-xl border bg-white p-6 shadow-sm shadow-black/5">
           <div className="flex flex-wrap items-start justify-between gap-4">
@@ -91,7 +99,7 @@ export default async function DashboardPage() {
 
         <div className="rounded-xl border bg-[#4a3828] p-5 text-white shadow-lg shadow-black/10">
           <div className="flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/15 text-lg font-semibold">助</span>
+            <BrandIcon className="h-10 w-10 bg-white text-[#4a3828]" />
             <div>
               <CardTitle className="text-white">小八助手</CardTitle>
               <p className="text-xs text-white/65">诊断 · 总结 · 引导 · 帮助</p>

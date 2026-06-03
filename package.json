@@ -12,6 +12,7 @@
     "prisma:generate": "prisma generate",
     "prisma:push": "prisma db push",
     "seed": "tsx scripts/seed.ts",
+    "accounts:backfill": "tsx scripts/backfill-operating-accounts.ts",
     "invite:create": "tsx scripts/create-invite.ts"
   },
   "dependencies": {

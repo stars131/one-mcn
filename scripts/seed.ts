@@ -9,9 +9,15 @@ async function main() {
     update: { activatedAt: new Date(), passwordHash: hashPassword("one-mcn-demo") },
     create: { email: "demo@one-mcn.local", name: "Demo Creator", activatedAt: new Date(), passwordHash: hashPassword("one-mcn-demo") }
   });
+  const operatingAccount = await prisma.operatingAccount.upsert({
+    where: { id: "demo-operating-account" },
+    update: { userId: user.id, name: "小八主号", platform: "综合", description: "演示运营账号" },
+    create: { id: "demo-operating-account", userId: user.id, name: "小八主号", platform: "综合", description: "演示运营账号" }
+  });
   const profile = await prisma.ipProfile.create({
     data: {
       userId: user.id,
+      operatingAccountId: operatingAccount.id,
       name: "AI 工具效率 IP",
       niche: "AI Agent 与个人效率",
       targetAudience: "希望用 AI 提升工作效率的创作者和自由职业者",
@@ -27,14 +33,15 @@ async function main() {
   });
   await prisma.source.createMany({
     data: [
-      { userId: user.id, name: "WLWL 热点接口", type: "hot_feed", url: "http://127.0.0.1:4100/api/hot-topics", config: { name: "WLWL Hotspot Collector" } },
-      { userId: user.id, name: "手动热点", type: "manual", config: {} }
+      { userId: user.id, operatingAccountId: operatingAccount.id, name: "WLWL 热点接口", type: "hot_feed", url: "http://127.0.0.1:4100/api/hot-topics", config: { name: "WLWL Hotspot Collector" } },
+      { userId: user.id, operatingAccountId: operatingAccount.id, name: "手动热点", type: "manual", config: {} }
     ],
     skipDuplicates: true
   });
   const topic = await prisma.topic.create({
     data: {
       userId: user.id,
+      operatingAccountId: operatingAccount.id,
       ipProfileId: profile.id,
       title: "用 AI Agent 把个人内容运营拆成 5 个自动化节点",
       corePoint: "工作流拆解比单点工具更重要",
@@ -51,6 +58,7 @@ async function main() {
   const content = await prisma.content.create({
     data: {
       userId: user.id,
+      operatingAccountId: operatingAccount.id,
       topicId: topic.id,
       platform: "小红书",
       contentType: "图文",
@@ -64,7 +72,7 @@ async function main() {
     }
   });
   await prisma.contentMetric.create({
-    data: { userId: user.id, contentId: content.id, platform: "小红书", views: 4200, likes: 260, comments: 42, saves: 380, shares: 61, followersGained: 37, completionRate: 0.72, clickRate: 0.08 }
+    data: { userId: user.id, operatingAccountId: operatingAccount.id, contentId: content.id, platform: "小红书", views: 4200, likes: 260, comments: 42, saves: 380, shares: 61, followersGained: 37, completionRate: 0.72, clickRate: 0.08 }
   });
 }
 
