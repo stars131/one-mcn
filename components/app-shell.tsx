@@ -16,11 +16,14 @@ const nav = [
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen">
-      <aside className="fixed inset-y-0 left-0 hidden w-60 border-r bg-white px-3 py-4 lg:block">
-        <Link href="/dashboard" className="mb-5 flex items-center gap-2 px-2 text-lg font-semibold">
-          <span className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-primary-foreground">M</span>
-          One MCN Agent
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(15,139,141,0.08),transparent_32rem)]">
+      <aside className="fixed inset-y-0 left-0 hidden w-64 border-r bg-white/90 px-3 py-4 backdrop-blur lg:block">
+        <Link href="/dashboard" className="mb-5 flex items-center gap-3 px-2 text-lg font-semibold">
+          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#4a3828] text-primary-foreground">助</span>
+          <span>
+            One MCN
+            <span className="block text-xs font-normal text-muted-foreground">个人 IP 运营助手</span>
+          </span>
         </Link>
         <nav className="space-y-1">
           {nav.map((item) => (
@@ -30,8 +33,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </Link>
           ))}
         </nav>
+        <div className="absolute bottom-4 left-3 right-3 rounded-lg border bg-[#f7f4ed] p-3 text-xs text-muted-foreground">
+          <p className="font-medium text-foreground">推广版入口已启用</p>
+          <p className="mt-1">首页面向用户，侧边栏保留完整运营后台。</p>
+        </div>
       </aside>
-      <main className="lg:pl-60">
+      <main className="lg:pl-64">
         <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">{children}</div>
       </main>
     </div>
