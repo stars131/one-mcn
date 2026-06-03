@@ -18,10 +18,10 @@ const nav = [
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(15,139,141,0.08),transparent_32rem)]">
-      <aside className="fixed inset-y-0 left-0 hidden w-64 border-r bg-white/90 px-3 py-4 backdrop-blur lg:block">
+    <div className="min-h-screen bg-[#fff9bf]">
+      <aside className="fixed inset-y-0 left-0 hidden w-64 border-r-4 border-black bg-white px-3 py-4 lg:block">
         <Link href="/dashboard" className="mb-5 flex items-center gap-3 px-2 text-lg font-semibold">
-          <BrandIcon className="h-9 w-9 rounded-lg" />
+          <BrandIcon className="h-9 w-9" />
           <span>
             小八的后援团
             <span className="block text-xs font-normal text-muted-foreground">你的专属MCN，已就位</span>
@@ -29,14 +29,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </Link>
         <nav className="space-y-1">
           {nav.map((item) => (
-            <Link key={item.href} href={item.href} className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground">
+            <Link key={item.href} href={item.href} className="flex items-center gap-2 rounded-none border-2 border-transparent px-3 py-2 text-sm font-semibold text-muted-foreground hover:border-black hover:bg-[#fff200] hover:text-foreground">
               <item.icon className="h-4 w-4" />
               {item.label}
             </Link>
           ))}
         </nav>
         <div className="absolute bottom-4 left-3 right-3 space-y-2">
-          <div className="rounded-lg border bg-[#f7f4ed] p-3 text-xs text-muted-foreground">
+          <div className="rounded-none border-2 border-black bg-[#00e5ff] p-3 text-xs font-semibold text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
             <p className="font-medium text-foreground">推广版入口已启用</p>
             <p className="mt-1">首页面向用户，侧边栏保留完整运营后台。</p>
           </div>

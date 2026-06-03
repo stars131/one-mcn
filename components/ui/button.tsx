@@ -8,10 +8,10 @@ export function Button({
   ...props
 }: React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: "default" | "outline" | "ghost"; asChild?: boolean }) {
   const buttonClassName = cn(
-    "inline-flex h-9 items-center justify-center gap-2 rounded-md px-3 text-sm font-medium transition disabled:opacity-50",
-    variant === "default" && "bg-primary text-primary-foreground hover:opacity-90",
-    variant === "outline" && "border bg-card hover:bg-muted",
-    variant === "ghost" && "hover:bg-muted",
+    "inline-flex h-9 items-center justify-center gap-2 rounded-none border-2 border-black px-3 text-sm font-bold transition disabled:opacity-50",
+    variant === "default" && "bg-[#ff2d55] text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-0.5",
+    variant === "outline" && "bg-white text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-[#fff200]",
+    variant === "ghost" && "border-transparent shadow-none hover:border-black hover:bg-[#fff200]",
     className
   );
 

@@ -19,7 +19,7 @@ const detailSections = [
 
 export default function HomePage() {
   return (
-    <main className="min-h-screen overflow-hidden bg-[#f7f4ed] text-[#1d1b18]">
+    <main className="min-h-screen overflow-hidden bg-[#fff9bf] text-black">
       <header className="mx-auto flex h-14 max-w-7xl items-center justify-between px-5">
         <Link href="/" className="flex items-center gap-3 font-semibold">
           <BrandIcon className="h-9 w-9" />
@@ -36,34 +36,33 @@ export default function HomePage() {
       </header>
 
       <section className="relative mx-auto grid min-h-[calc(100vh-56px)] max-w-7xl items-center gap-5 px-5 pb-4 pt-0 lg:grid-cols-[minmax(0,1fr)_360px]">
-        <div className="absolute left-1/2 top-12 h-64 w-64 -translate-x-1/2 rounded-full bg-[#0f8b8d]/10 blur-3xl" />
         <div className="relative">
-          <div className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/70 px-3 py-1.5 text-sm text-[#6c6258] shadow-sm backdrop-blur">
-            <Sparkles className="h-4 w-4 text-[#0f8b8d]" />
+          <div className="inline-flex items-center gap-2 rounded-none border-2 border-black bg-white px-3 py-1.5 text-sm font-bold shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+            <Sparkles className="h-4 w-4 text-[#ff2d55]" />
             你的专属MCN，已就位
           </div>
           <h1 className="mt-4 max-w-4xl text-4xl font-semibold leading-[1.04] tracking-tight sm:text-5xl lg:text-[3.35rem]">
             小八的后援团。
-            <span className="block text-[#0f8b8d]">你的专属MCN，已就位。</span>
+            <span className="block bg-[#00e5ff] px-2 text-black">你的专属MCN，已就位。</span>
           </h1>
-          <p className="mt-3 max-w-2xl text-base leading-7 text-[#625a50]">
+          <p className="mt-3 max-w-2xl text-base font-medium leading-7 text-black">
             把 IP 定位、热点发现、AI 选题、内容生成、发布计划和数据复盘收拢到一个清晰的运营闭环里。
           </p>
           <div className="mt-4 flex flex-wrap items-center gap-3">
-            <Button asChild className="h-10 rounded-full px-5">
+            <Button asChild className="h-10 px-5">
               <Link href="/register">
                 使用邀请码进入
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </Button>
-            <Button asChild variant="outline" className="h-10 rounded-full bg-white/70 px-5">
+            <Button asChild variant="outline" className="h-10 bg-white px-5">
               <Link href="/login">已有账号登录</Link>
             </Button>
           </div>
-          <div className="mt-4 grid gap-2 text-sm text-[#6c6258] sm:grid-cols-2">
+          <div className="mt-4 grid gap-2 text-sm font-semibold text-black sm:grid-cols-2">
             {["用户审核确认", "不做违规爬虫", "支持多平台内容", "可扩展 Agent 工作流"].map((item) => (
               <span key={item} className="inline-flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-[#0f8b8d]" />
+                <CheckCircle2 className="h-4 w-4 text-[#ff2d55]" />
                 {item}
               </span>
             ))}
@@ -71,11 +70,11 @@ export default function HomePage() {
         </div>
 
         <div className="relative">
-          <div className="rounded-[1.5rem] border border-white/80 bg-white/75 p-3 shadow-2xl shadow-[#4a3828]/15 backdrop-blur">
-            <div className="rounded-[1.15rem] bg-[#4a3828] p-4 text-white">
+          <div className="rounded-none border-4 border-black bg-white p-3 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+            <div className="rounded-none border-2 border-black bg-black p-4 text-white">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <BrandIcon className="h-11 w-11 bg-white text-[#4a3828]" />
+                  <BrandIcon className="h-11 w-11 bg-[#fff200] text-black" />
                   <div>
                     <p className="font-semibold">小八助手</p>
                     <p className="text-xs text-white/60">诊断 · 总结 · 引导 · 帮助</p>
@@ -89,7 +88,7 @@ export default function HomePage() {
                   ["热点入口", "URL 接入"],
                   ["内容复盘", "下一轮建议"]
                 ].map(([title, text]) => (
-                  <div key={title} className="flex items-center justify-between rounded-2xl bg-white/10 px-3 py-2.5">
+                  <div key={title} className="flex items-center justify-between rounded-none border-2 border-white bg-black px-3 py-2.5">
                     <div className="text-sm font-medium">{title}</div>
                     <p className="text-xs text-white/65">{text as string}</p>
                   </div>
@@ -98,8 +97,8 @@ export default function HomePage() {
             </div>
             <div className="grid grid-cols-2 gap-2 p-2 pt-3">
               {features.map((feature) => (
-                <div key={feature.title} className="flex h-16 flex-col justify-center rounded-2xl border bg-[#fbfaf7] px-3">
-                  <feature.icon className="h-4 w-4 text-[#0f8b8d]" />
+                <div key={feature.title} className="flex h-16 flex-col justify-center rounded-none border-2 border-black bg-[#fff200] px-3">
+                  <feature.icon className="h-4 w-4 text-black" />
                   <p className="mt-1 text-sm font-medium">{feature.title}</p>
                 </div>
               ))}
@@ -108,10 +107,10 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="border-t bg-white/60">
+      <section className="border-t-4 border-black bg-white">
         <div className="mx-auto grid max-w-7xl gap-8 px-5 py-16 lg:grid-cols-[360px_1fr]">
           <div>
-            <div className="inline-flex items-center gap-2 rounded-full bg-[#eef5f2] px-3 py-1 text-sm text-[#0f8b8d]">
+            <div className="inline-flex items-center gap-2 rounded-none border-2 border-black bg-[#00e5ff] px-3 py-1 text-sm font-bold text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
               <Layers3 className="h-4 w-4" />
               产品能力
             </div>
@@ -122,9 +121,9 @@ export default function HomePage() {
           </div>
           <div className="grid gap-4 md:grid-cols-2">
             {detailSections.map(([title, text]) => (
-              <div key={title} className="rounded-3xl border bg-white p-6 shadow-sm shadow-black/5">
+              <div key={title} className="rounded-none border-2 border-black bg-white p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
                 <p className="text-lg font-semibold">{title}</p>
-                <p className="mt-3 text-sm leading-7 text-[#6c6258]">{text}</p>
+                <p className="mt-3 text-sm leading-7 text-black">{text}</p>
               </div>
             ))}
           </div>

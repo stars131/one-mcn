@@ -59,10 +59,10 @@ export default async function DashboardPage() {
       <OperatingAccountSwitcher accounts={data.accounts} currentId={data.currentAccount.id} />
 
       <section className="grid gap-5 lg:grid-cols-[1fr_390px]">
-        <div className="rounded-xl border bg-white p-6 shadow-sm shadow-black/5">
+        <div className="rounded-none border-2 border-black bg-white p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <div className="inline-flex items-center gap-2 rounded-full border bg-[#f7f4ed] px-3 py-1 text-xs text-muted-foreground">
+              <div className="inline-flex items-center gap-2 rounded-none border-2 border-black bg-[#fff200] px-3 py-1 text-xs text-muted-foreground">
                 <Sparkles className="h-3.5 w-3.5 text-primary" />
                 AI Agent 驱动的个人 IP 运营台
               </div>
@@ -83,8 +83,8 @@ export default async function DashboardPage() {
 
           <div className="mt-7 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {quickActions.map((action) => (
-              <Link key={action.href} href={action.href} className="group rounded-lg border bg-[#fbfaf7] p-4 transition hover:-translate-y-0.5 hover:bg-white hover:shadow-md hover:shadow-black/5">
-                <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${action.color}`}>
+              <Link key={action.href} href={action.href} className="group rounded-none border-2 border-black bg-[#fff200] p-4 transition hover:-translate-y-0.5 hover:bg-white hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                <div className={`flex h-10 w-10 items-center justify-center rounded-none ${action.color}`}>
                   <action.icon className="h-5 w-5" />
                 </div>
                 <div className="mt-4 flex items-center justify-between gap-3">
@@ -97,7 +97,7 @@ export default async function DashboardPage() {
           </div>
         </div>
 
-        <div className="rounded-xl border bg-[#4a3828] p-5 text-white shadow-lg shadow-black/10">
+        <div className="rounded-none border-4 border-black bg-black p-5 text-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
           <div className="flex items-center gap-3">
             <BrandIcon className="h-10 w-10 bg-white text-[#4a3828]" />
             <div>
@@ -114,7 +114,7 @@ export default async function DashboardPage() {
               ["本周重点", "优先打通 1 条内容从选题到复盘的链路"],
               ["后台能力", "设置、来源、数据、报告仍完整保留"]
             ].map(([label, text]) => (
-              <div key={label} className="rounded-lg bg-white/10 p-3">
+              <div key={label} className="rounded-none border-2 border-white bg-black p-3">
                 <p className="text-xs text-white/55">{label}</p>
                 <p className="mt-1 text-sm">{text}</p>
               </div>
@@ -134,7 +134,7 @@ export default async function DashboardPage() {
           </div>
           <div className="mt-5 grid gap-2 sm:grid-cols-4">
             {flow.map((step, index) => (
-              <div key={step} className="rounded-lg border bg-[#fbfaf7] p-3">
+              <div key={step} className="rounded-none border-2 border-black bg-[#fff200] p-3">
                 <span className="text-xs text-muted-foreground">{String(index + 1).padStart(2, "0")}</span>
                 <p className="mt-2 text-sm font-medium">{step}</p>
               </div>
@@ -166,17 +166,17 @@ export default async function DashboardPage() {
       </section>
 
       <section className="grid gap-3 md:grid-cols-3">
-        <Link href="/calendar" className="rounded-lg border bg-white p-4 text-sm hover:bg-[#fbfaf7]">
+        <Link href="/calendar" className="rounded-none border-2 border-black bg-white p-4 text-sm hover:bg-[#fff200] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
           <CalendarDays className="h-5 w-5 text-primary" />
           <p className="mt-3 font-medium">安排发布时间</p>
           <p className="mt-1 text-muted-foreground">把待发布内容放进计划表。</p>
         </Link>
-        <Link href="/analytics" className="rounded-lg border bg-white p-4 text-sm hover:bg-[#fbfaf7]">
+        <Link href="/analytics" className="rounded-none border-2 border-black bg-white p-4 text-sm hover:bg-[#00e5ff] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
           <BarChart3 className="h-5 w-5 text-primary" />
           <p className="mt-3 font-medium">录入发布数据</p>
           <p className="mt-1 text-muted-foreground">计算阅读、互动、收藏和转粉。</p>
         </Link>
-        <Link href="/settings" className="rounded-lg border bg-white p-4 text-sm hover:bg-[#fbfaf7]">
+        <Link href="/settings" className="rounded-none border-2 border-black bg-white p-4 text-sm hover:bg-[#ff2d55] hover:text-black hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
           <Settings className="h-5 w-5 text-primary" />
           <p className="mt-3 font-medium">配置系统参数</p>
           <p className="mt-1 text-muted-foreground">AI Provider、模型、Token 和默认平台。</p>

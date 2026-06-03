@@ -127,7 +127,7 @@ export function HotTopicsWorkbench() {
               </div>
             </div>
             {Array.isArray(item.recommendedAngles) && item.recommendedAngles.length > 0 ? (
-              <pre className="mt-3 max-h-36 overflow-auto rounded-md bg-muted p-3 text-xs">{JSON.stringify(item.recommendedAngles, null, 2)}</pre>
+              <pre className="mt-3 max-h-36 overflow-auto rounded-none bg-muted p-3 text-xs">{JSON.stringify(item.recommendedAngles, null, 2)}</pre>
             ) : null}
           </Card>
         ))}

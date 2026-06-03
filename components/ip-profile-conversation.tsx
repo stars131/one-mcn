@@ -230,7 +230,7 @@ export function IpProfileConversation() {
             <div className="mt-4 grid gap-3">
               {draft.notes.length ? (
                 draft.notes.map((item, index) => (
-                  <div key={`${item}-${index}`} className="rounded-md border bg-muted/40 p-3 text-sm leading-6">
+                  <div key={`${item}-${index}`} className="rounded-none border-2 border-black bg-[#fff200] p-3 text-sm font-medium leading-6">
                     {item}
                   </div>
                 ))
@@ -277,7 +277,7 @@ export function IpProfileConversation() {
               保存修改
             </Button>
             {!!profiles.length && (
-              <select className="h-9 rounded-md border bg-white px-3 text-sm" value={selectedId} onChange={(event) => setSelectedId(event.target.value)}>
+              <select className="h-9 rounded-none border-2 border-black bg-white px-3 text-sm" value={selectedId} onChange={(event) => setSelectedId(event.target.value)}>
                 {profiles.map((profile) => (
                   <option key={profile.id} value={profile.id}>
                     {profile.name}

@@ -1,10 +1,17 @@
 import { Card, CardTitle } from "@/components/ui/card";
-import { Input, Select } from "@/components/ui/input";
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { getModelConfig } from "@/lib/ai/llm-client";
+import { getCurrentUser } from "@/lib/auth/session";
+import { prisma } from "@/lib/db/prisma";
+import { ModelSettingsForm } from "@/components/model-settings-form";
 
-export default function SettingsPage() {
-  const config = getModelConfig();
+export const dynamic = "force-dynamic";
+
+export default async function SettingsPage() {
+  const config = await getModelConfig();
+  const user = await getCurrentUser();
+  const preference = user ? await prisma.userModelPreference.findUnique({ where: { userId: user.id } }) : null;
 
   return (
     <div className="space-y-5">
@@ -14,15 +21,10 @@ export default function SettingsPage() {
       </div>
       <Card>
         <CardTitle>AI 模型配置</CardTitle>
-        <div className="mt-4 grid gap-3 md:grid-cols-2">
-          <Select defaultValue={config.provider}><option>newapi</option><option>openrouter</option><option>openai</option><option>deepseek</option></Select>
-          <Input defaultValue={config.baseUrl} placeholder="AI_BASE_URL" />
-          <Input defaultValue={config.textModel} placeholder="AI_TEXT_MODEL 语言模型" />
-          <Input defaultValue={config.multimodalModel} placeholder="AI_MULTIMODAL_MODEL 多模态模型" />
-          <Input defaultValue={config.imageModel} placeholder="AI_IMAGE_MODEL 生图模型" />
-          <Input placeholder="AI_API_KEY 使用环境变量配置" />
+        <p className="mt-2 text-sm text-muted-foreground">默认使用服务器积分模型；也可以切换为自带 Key，由用户自己的模型服务完成调用。</p>
+        <div className="mt-4">
+          <ModelSettingsForm initial={{ ...config, hasCustomKey: Boolean(preference?.apiKey) }} />
         </div>
-        <p className="mt-3 text-xs text-muted-foreground">当前设置页先展示环境配置；后续商业化接入用户级模型配置时，可复用这些字段。</p>
       </Card>
       <Card>
         <CardTitle>运营配置</CardTitle>

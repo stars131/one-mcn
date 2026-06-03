@@ -20,7 +20,7 @@ export function MarkdownEditor({ value, placeholder, onChange }: { value: string
   const preview = useMemo(() => renderMarkdown(value), [value]);
 
   return (
-    <div className="rounded-md border bg-white">
+    <div className="rounded-none border-2 border-black bg-white">
       <div className="flex items-center gap-2 border-b p-2">
         <Button type="button" variant={mode === "edit" ? "default" : "ghost"} onClick={() => setMode("edit")}>编辑</Button>
         <Button type="button" variant={mode === "preview" ? "default" : "ghost"} onClick={() => setMode("preview")}>预览</Button>
