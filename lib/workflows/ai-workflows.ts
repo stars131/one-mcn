@@ -77,7 +77,7 @@ export async function generateTopicsWorkflow(input: { hotTopicId: string; ipProf
 export async function generateContentWorkflow(input: { topicId: string; platform: string; contentType: string }) {
   const topic = await prisma.topic.findUniqueOrThrow({ where: { id: input.topicId }, include: { ipProfile: true } });
   const result = await generateJson<any>([{ role: "user", content: prompts.contentGeneration({ topic, ipProfile: topic.ipProfile, platform: input.platform, contentType: input.contentType }) }]);
-  return prisma.content.create({
+  const content = await prisma.content.create({
     data: {
       userId: topic.userId,
       operatingAccountId: topic.operatingAccountId,
@@ -94,6 +94,17 @@ export async function generateContentWorkflow(input: { topicId: string; platform
       commentGuide: result.commentGuide || ""
     }
   });
+  await prisma.publishRecord.create({
+    data: {
+      userId: topic.userId,
+      operatingAccountId: topic.operatingAccountId,
+      contentId: content.id,
+      platform: input.platform,
+      plannedAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+      status: "planned"
+    }
+  });
+  return content;
 }
 
 export async function adaptContentWorkflow(input: { contentId: string; targetPlatform: string }) {

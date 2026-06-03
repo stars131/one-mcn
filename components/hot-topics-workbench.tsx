@@ -3,19 +3,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardTitle } from "@/components/ui/card";
-import { Input, Select, Textarea } from "@/components/ui/input";
-
-function parseJsonArray(value: string) {
-  if (!value.trim()) return [];
-  const parsed = JSON.parse(value);
-  return Array.isArray(parsed) ? parsed : [];
-}
+import { Select } from "@/components/ui/input";
+import { HotspotAccessPanel } from "@/components/hotspot-access-panel";
 
 export function HotTopicsWorkbench() {
   const [items, setItems] = useState<any[]>([]);
   const [profiles, setProfiles] = useState<any[]>([]);
+  const [sources, setSources] = useState<any[]>([]);
   const [profileId, setProfileId] = useState("");
-  const [form, setForm] = useState<Record<string, string>>({});
   const [message, setMessage] = useState("");
 
   async function load() {
@@ -23,8 +18,10 @@ export function HotTopicsWorkbench() {
       fetch("/api/hot-topics").then((r) => r.json()),
       fetch("/api/ip-profiles").then((r) => r.json())
     ]);
+    const sourcesData = await fetch("/api/sources").then((r) => r.json());
     setItems(topicsData);
     setProfiles(profilesData);
+    setSources(sourcesData.filter((source: any) => source.type === "hot_feed"));
     setProfileId((current) => current || profilesData[0]?.id || "");
   }
 
@@ -34,39 +31,28 @@ export function HotTopicsWorkbench() {
 
   const sorted = useMemo(() => [...items].sort((a, b) => (b.recommendationScore || 0) - (a.recommendationScore || 0)), [items]);
 
-  async function createManualTopic() {
+  async function refreshHotspots() {
     try {
-      const res = await fetch("/api/hot-topics", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: form.title,
-          summary: form.summary,
-          url: form.url,
-          platform: form.platform || "manual",
-          sourceName: "Manual",
-          sourceType: "manual",
-          tags: parseJsonArray(form.tags || "")
-        })
-      });
-      if (!res.ok) throw new Error((await res.json()).error || "保存失败");
-      setForm({});
-      setMessage("热点已添加");
+      if (!sources.length) throw new Error("请先启用免费或付费热点接口");
+      for (const source of sources) {
+        await fetch(`/api/sources/${source.id}/fetch`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ limit: 20, timeRange: "day" }) });
+      }
+      setMessage("热点已更新");
       await load();
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "操作失败");
     }
   }
 
-  async function runAction(item: any, action: "analyze" | "generate-topics" | "used" | "ignored") {
+  async function runAction(item: any, action: "analyze" | "generate-topics" | "generate-content" | "used" | "ignored") {
     try {
-      if ((action === "analyze" || action === "generate-topics") && !profileId) throw new Error("请先创建并选择一个 IP Profile");
+      if ((action === "analyze" || action === "generate-topics" || action === "generate-content") && !profileId) throw new Error("请先创建并选择一个 IP Profile");
       const res =
         action === "used" || action === "ignored"
           ? await fetch(`/api/hot-topics/${item.id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status: action }) })
           : await fetch(`/api/hot-topics/${item.id}/${action}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ipProfileId: profileId }) });
       if (!res.ok) throw new Error((await res.json()).error || "操作失败");
-      setMessage(action === "analyze" ? "AI 分析已完成" : action === "generate-topics" ? "选题已生成" : "状态已更新");
+      setMessage(action === "analyze" ? "AI 分析已完成" : action === "generate-topics" ? "选题已生成" : action === "generate-content" ? "内容初稿和发布计划已生成" : "状态已更新");
       await load();
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "操作失败");
@@ -77,8 +63,9 @@ export function HotTopicsWorkbench() {
     <div className="space-y-5">
       <div>
         <h1 className="text-2xl font-semibold">热点雷达</h1>
-        <p className="mt-1 text-sm text-muted-foreground">查看热点、按推荐指数排序，执行 AI 分析并生成选题。</p>
+        <p className="mt-1 text-sm text-muted-foreground">选择免费或付费热点接口，展示热点后按人设一键生成内容初稿。</p>
       </div>
+      <HotspotAccessPanel />
       <Card>
         <div className="flex flex-wrap items-end gap-3">
           <label className="min-w-72 flex-1 space-y-1 text-sm">
@@ -89,18 +76,8 @@ export function HotTopicsWorkbench() {
             </Select>
           </label>
           <span className="pb-2 text-sm text-muted-foreground">{message}</span>
+          <Button onClick={refreshHotspots}>更新热点</Button>
         </div>
-      </Card>
-      <Card>
-        <CardTitle>手动添加热点</CardTitle>
-        <div className="mt-4 grid gap-3 md:grid-cols-2">
-          <Input placeholder="标题" value={form.title || ""} onChange={(e) => setForm({ ...form, title: e.target.value })} />
-          <Input placeholder="平台" value={form.platform || ""} onChange={(e) => setForm({ ...form, platform: e.target.value })} />
-          <Input placeholder="URL" value={form.url || ""} onChange={(e) => setForm({ ...form, url: e.target.value })} />
-          <Input placeholder='标签 JSON，例如 ["AI","增长"]' value={form.tags || ""} onChange={(e) => setForm({ ...form, tags: e.target.value })} />
-          <Textarea className="md:col-span-2" placeholder="摘要" value={form.summary || ""} onChange={(e) => setForm({ ...form, summary: e.target.value })} />
-        </div>
-        <Button className="mt-4" onClick={createManualTopic}>保存热点</Button>
       </Card>
       <div className="grid gap-3">
         {sorted.map((item) => (
@@ -121,7 +98,7 @@ export function HotTopicsWorkbench() {
               </div>
               <div className="flex flex-wrap gap-2">
                 <Button variant="outline" onClick={() => runAction(item, "analyze")}>AI 分析</Button>
-                <Button variant="outline" onClick={() => runAction(item, "generate-topics")}>生成选题</Button>
+                <Button variant="outline" onClick={() => runAction(item, "generate-content")}>生成初稿</Button>
                 <Button variant="ghost" onClick={() => runAction(item, "used")}>已使用</Button>
                 <Button variant="ghost" onClick={() => runAction(item, "ignored")}>忽略</Button>
               </div>
@@ -131,7 +108,7 @@ export function HotTopicsWorkbench() {
             ) : null}
           </Card>
         ))}
-        {!sorted.length && <Card className="text-sm text-muted-foreground">暂无热点，先添加来源并采集，或手动添加热点。</Card>}
+        {!sorted.length && <Card className="text-sm text-muted-foreground">暂无热点，先启用免费/付费接口，然后点击更新热点。</Card>}
       </div>
     </div>
   );

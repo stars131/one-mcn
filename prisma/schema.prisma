@@ -46,12 +46,18 @@ model UserModelConfig {
   id              String   @id @default(cuid())
   userId          String
   name            String
-  provider        String   @default("newapi")
-  baseUrl         String
+  textProvider    String   @default("newapi")
+  textBaseUrl     String
   textModel       String
+  textApiKey      String?
+  multimodalProvider String @default("newapi")
+  multimodalBaseUrl String
   multimodalModel String
+  multimodalApiKey String?
+  imageProvider   String   @default("newapi")
+  imageBaseUrl    String
   imageModel      String
-  apiKey          String?
+  imageApiKey     String?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
   user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)

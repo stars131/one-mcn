@@ -56,9 +56,9 @@ export async function getModelConfig(): Promise<ModelConfig> {
     return {
       mode: "custom",
       selectedConfigId: selected.id,
-      provider: selected.provider,
-      apiKey: selected.apiKey,
-      baseUrl: selected.baseUrl,
+      provider: selected.textProvider,
+      apiKey: selected.textApiKey,
+      baseUrl: selected.textBaseUrl,
       textModel: selected.textModel,
       multimodalModel: selected.multimodalModel,
       imageModel: selected.imageModel,

@@ -29,12 +29,18 @@ export default async function SettingsPage() {
               configs: configs.map((item) => ({
                 id: item.id,
                 name: item.name,
-                provider: item.provider,
-                baseUrl: item.baseUrl,
+                textProvider: item.textProvider,
+                textBaseUrl: item.textBaseUrl,
                 textModel: item.textModel,
+                textHasKey: Boolean(item.textApiKey),
+                multimodalProvider: item.multimodalProvider,
+                multimodalBaseUrl: item.multimodalBaseUrl,
                 multimodalModel: item.multimodalModel,
+                multimodalHasKey: Boolean(item.multimodalApiKey),
+                imageProvider: item.imageProvider,
+                imageBaseUrl: item.imageBaseUrl,
                 imageModel: item.imageModel,
-                hasKey: Boolean(item.apiKey)
+                imageHasKey: Boolean(item.imageApiKey)
               }))
             }}
           />

@@ -59,6 +59,17 @@ export function AnalyticsDashboard() {
         <h1 className="text-2xl font-semibold">数据分析</h1>
         <p className="mt-1 text-sm text-muted-foreground">录入发布数据，查看排行榜、平台对比、标签分析和 7/30 天趋势。</p>
       </div>
+      <Card>
+        <CardTitle>平台数据输入方式</CardTitle>
+        <div className="mt-4 grid gap-3 md:grid-cols-4">
+          {["小红书数据截图", "公众号阅读数据", "抖音视频数据", "手动表格导入"].map((item) => (
+            <button key={item} className="border-2 border-black bg-[#fff200] p-3 text-left text-sm font-semibold shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+              {item}
+              <span className="mt-2 block text-xs text-black/60">即将支持</span>
+            </button>
+          ))}
+        </div>
+      </Card>
       <div className="grid gap-3 md:grid-cols-5">{cards.map(([label, value]) => <Card key={label}><p className="text-sm text-muted-foreground">{label}</p><p className="mt-2 text-2xl font-semibold">{value ?? 0}</p></Card>)}</div>
       <Card>
         <CardTitle>数据录入</CardTitle>

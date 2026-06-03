@@ -9,13 +9,21 @@ type ModelMode = "server_credits" | "custom";
 type UserModelConfig = {
   id?: string;
   name: string;
-  provider: string;
-  baseUrl: string;
+  textProvider: string;
+  textBaseUrl: string;
   textModel: string;
+  textHasKey?: boolean;
+  textApiKey?: string;
+  multimodalProvider: string;
+  multimodalBaseUrl: string;
   multimodalModel: string;
+  multimodalHasKey?: boolean;
+  multimodalApiKey?: string;
+  imageProvider: string;
+  imageBaseUrl: string;
   imageModel: string;
-  hasKey?: boolean;
-  apiKey?: string;
+  imageHasKey?: boolean;
+  imageApiKey?: string;
 };
 type ModelSettings = {
   mode: ModelMode;
@@ -27,13 +35,19 @@ type ModelSettings = {
 function newConfig(): UserModelConfig {
   return {
     name: "我的模型",
-    provider: "newapi",
-    baseUrl: "",
+    textProvider: "newapi",
+    textBaseUrl: "",
     textModel: "",
+    multimodalProvider: "newapi",
+    multimodalBaseUrl: "",
     multimodalModel: "",
+    imageProvider: "newapi",
+    imageBaseUrl: "",
     imageModel: ""
   };
 }
+
+const providers = ["newapi", "openai", "openrouter", "deepseek"];
 
 export function ModelSettingsForm({ initial }: { initial: ModelSettings }) {
   const [mode, setMode] = useState<ModelMode>(initial.mode);
@@ -75,7 +89,7 @@ export function ModelSettingsForm({ initial }: { initial: ModelSettings }) {
       });
       if (!res.ok) throw new Error((await res.json()).error || "保存失败");
       const data = await res.json();
-      const saved = data.configs?.map((config: any) => ({ ...config, hasKey: Boolean(config.apiKey), apiKey: "" })) || [];
+      const saved = data.configs?.map((config: any) => ({ ...config, textHasKey: Boolean(config.textApiKey), multimodalHasKey: Boolean(config.multimodalApiKey), imageHasKey: Boolean(config.imageApiKey), textApiKey: "", multimodalApiKey: "", imageApiKey: "" })) || [];
       if (saved.length) {
         setConfigs(saved);
         setSelectedConfigId(data.preference?.selectedConfigId || saved[0]?.id || "");
@@ -146,35 +160,35 @@ export function ModelSettingsForm({ initial }: { initial: ModelSettings }) {
                     <span className="font-semibold">名称</span>
                     <Input value={config.name} onChange={(event) => updateConfig(index, { name: event.target.value })} />
                   </label>
-                  <label className="space-y-1 text-sm">
-                    <span className="font-semibold">Provider</span>
-                    <Select value={config.provider} onChange={(event) => updateConfig(index, { provider: event.target.value })}>
-                      <option value="newapi">newapi</option>
-                      <option value="openai">openai</option>
-                      <option value="openrouter">openrouter</option>
-                      <option value="deepseek">deepseek</option>
-                    </Select>
-                  </label>
-                  <label className="space-y-1 text-sm md:col-span-2">
-                    <span className="font-semibold">Base URL</span>
-                    <Input value={config.baseUrl} onChange={(event) => updateConfig(index, { baseUrl: event.target.value })} placeholder="https://api.example.com" />
-                  </label>
-                  <label className="space-y-1 text-sm">
-                    <span className="font-semibold">语言模型</span>
-                    <Input value={config.textModel} onChange={(event) => updateConfig(index, { textModel: event.target.value })} placeholder="model-name" />
-                  </label>
-                  <label className="space-y-1 text-sm">
-                    <span className="font-semibold">多模态模型</span>
-                    <Input value={config.multimodalModel} onChange={(event) => updateConfig(index, { multimodalModel: event.target.value })} placeholder="model-name" />
-                  </label>
-                  <label className="space-y-1 text-sm">
-                    <span className="font-semibold">生图模型</span>
-                    <Input value={config.imageModel} onChange={(event) => updateConfig(index, { imageModel: event.target.value })} placeholder="model-name" />
-                  </label>
-                  <label className="space-y-1 text-sm">
-                    <span className="font-semibold">API Key</span>
-                    <Input type="password" value={config.apiKey || ""} onChange={(event) => updateConfig(index, { apiKey: event.target.value })} placeholder={config.hasKey ? "已配置，留空不修改" : "请输入 API Key"} />
-                  </label>
+                  {[
+                    ["语言模型", "text"],
+                    ["多模态模型", "multimodal"],
+                    ["生图模型", "image"]
+                  ].map(([label, prefix]) => (
+                    <div key={prefix} className="space-y-3 border-2 border-black bg-[#fff9bf] p-3 md:col-span-2">
+                      <p className="font-black">{label}</p>
+                      <div className="grid gap-3 md:grid-cols-2">
+                        <label className="space-y-1 text-sm">
+                          <span className="font-semibold">Provider</span>
+                          <Select value={(config as any)[`${prefix}Provider`]} onChange={(event) => updateConfig(index, { [`${prefix}Provider`]: event.target.value } as any)}>
+                            {providers.map((provider) => <option key={provider} value={provider}>{provider}</option>)}
+                          </Select>
+                        </label>
+                        <label className="space-y-1 text-sm">
+                          <span className="font-semibold">模型名</span>
+                          <Input value={(config as any)[`${prefix}Model`] || ""} onChange={(event) => updateConfig(index, { [`${prefix}Model`]: event.target.value } as any)} placeholder="model-name" />
+                        </label>
+                        <label className="space-y-1 text-sm">
+                          <span className="font-semibold">URL</span>
+                          <Input value={(config as any)[`${prefix}BaseUrl`] || ""} onChange={(event) => updateConfig(index, { [`${prefix}BaseUrl`]: event.target.value } as any)} placeholder="https://api.example.com" />
+                        </label>
+                        <label className="space-y-1 text-sm">
+                          <span className="font-semibold">Key</span>
+                          <Input type="password" value={(config as any)[`${prefix}ApiKey`] || ""} onChange={(event) => updateConfig(index, { [`${prefix}ApiKey`]: event.target.value } as any)} placeholder={(config as any)[`${prefix}HasKey`] ? "已配置，留空不修改" : "请输入 Key"} />
+                        </label>
+                      </div>
+                    </div>
+                  ))}
                 </div>
                 <div className="mt-4 flex flex-wrap gap-2">
                   <Button variant="outline" onClick={() => setSelectedConfigId(config.id || "")} disabled={!config.id}>

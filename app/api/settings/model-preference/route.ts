@@ -11,12 +11,18 @@ const preferenceSchema = z.object({
   configs: z.array(z.object({
     id: z.string().optional(),
     name: z.string().min(1),
-    provider: z.string().min(1).default("newapi"),
-    baseUrl: z.string().min(1),
+    textProvider: z.string().min(1).default("newapi"),
+    textBaseUrl: z.string().min(1),
     textModel: z.string().min(1),
+    textApiKey: z.string().optional().nullable(),
+    multimodalProvider: z.string().min(1).default("newapi"),
+    multimodalBaseUrl: z.string().min(1),
     multimodalModel: z.string().min(1),
+    multimodalApiKey: z.string().optional().nullable(),
+    imageProvider: z.string().min(1).default("newapi"),
+    imageBaseUrl: z.string().min(1),
     imageModel: z.string().min(1),
-    apiKey: z.string().optional().nullable()
+    imageApiKey: z.string().optional().nullable()
   })).default([])
 });
 
@@ -32,12 +38,18 @@ export async function PUT(request: Request) {
         const existing = config.id ? await prisma.userModelConfig.findFirst({ where: { id: config.id, userId: user.id } }) : null;
         const data = {
           name: config.name,
-          provider: config.provider,
-          baseUrl: config.baseUrl,
+          textProvider: config.textProvider,
+          textBaseUrl: config.textBaseUrl,
           textModel: config.textModel,
+          ...(config.textApiKey ? { textApiKey: config.textApiKey } : {}),
+          multimodalProvider: config.multimodalProvider,
+          multimodalBaseUrl: config.multimodalBaseUrl,
           multimodalModel: config.multimodalModel,
+          ...(config.multimodalApiKey ? { multimodalApiKey: config.multimodalApiKey } : {}),
+          imageProvider: config.imageProvider,
+          imageBaseUrl: config.imageBaseUrl,
           imageModel: config.imageModel,
-          ...(config.apiKey ? { apiKey: config.apiKey } : {})
+          ...(config.imageApiKey ? { imageApiKey: config.imageApiKey } : {})
         };
         savedConfigs.push(
           existing
@@ -55,7 +67,7 @@ export async function PUT(request: Request) {
       update: { mode: body.mode, selectedConfigId },
       create: { userId: user.id, mode: body.mode, selectedConfigId }
     });
-    return ok({ preference, configs: savedConfigs.map((config) => ({ ...config, apiKey: config.apiKey ? "configured" : null })) });
+    return ok({ preference, configs: savedConfigs.map((config) => ({ ...config, textApiKey: config.textApiKey ? "configured" : null, multimodalApiKey: config.multimodalApiKey ? "configured" : null, imageApiKey: config.imageApiKey ? "configured" : null })) });
   } catch (error) {
     return apiError(error);
   }

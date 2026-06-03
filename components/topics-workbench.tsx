@@ -1,19 +1,21 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { MessageSquareText, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardTitle } from "@/components/ui/card";
-import { Input, Select, Textarea } from "@/components/ui/input";
+import { Select, Textarea } from "@/components/ui/input";
 
-function parseArray(value: string) {
-  if (!value.trim()) return [];
-  const parsed = JSON.parse(value);
-  return Array.isArray(parsed) ? parsed : [];
-}
+const platforms = ["小红书", "公众号", "抖音", "知乎"];
+const contentTypes = ["图文", "短视频脚本", "长文", "问答"];
+const angles = ["解决痛点", "热点观点", "教程清单", "避坑经验", "案例拆解"];
 
 export function TopicsWorkbench() {
   const [items, setItems] = useState<any[]>([]);
-  const [form, setForm] = useState<Record<string, string>>({});
+  const [note, setNote] = useState("");
+  const [platform, setPlatform] = useState("小红书");
+  const [contentType, setContentType] = useState("图文");
+  const [angle, setAngle] = useState("解决痛点");
   const [message, setMessage] = useState("");
 
   async function load() {
@@ -25,24 +27,26 @@ export function TopicsWorkbench() {
   }, []);
 
   async function createTopic() {
+    const trimmed = note.trim();
+    if (!trimmed) return;
     try {
       const res = await fetch("/api/topics", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          title: form.title,
-          corePoint: form.corePoint || "",
-          targetAudience: form.targetAudience || "",
-          userPainPoint: form.userPainPoint || "",
-          platform: form.platform || "小红书",
-          contentType: form.contentType || "图文",
-          reason: form.reason || "",
-          outline: parseArray(form.outline || "")
+          title: `${angle}：${trimmed.slice(0, 32)}`,
+          corePoint: trimmed,
+          targetAudience: "当前 IP 的目标用户",
+          userPainPoint: angle,
+          platform,
+          contentType,
+          reason: `通过对话选择「${angle}」生成`,
+          outline: ["开场引入", "核心观点", "可执行步骤", "结尾互动"]
         })
       });
       if (!res.ok) throw new Error((await res.json()).error || "保存失败");
-      setForm({});
-      setMessage("选题已保存");
+      setNote("");
+      setMessage("选题已生成");
       await load();
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "操作失败");
@@ -57,41 +61,50 @@ export function TopicsWorkbench() {
         body: JSON.stringify({ platform: item.platform || "小红书", contentType: item.contentType || "图文" })
       });
       if (!res.ok) throw new Error((await res.json()).error || "生成失败");
-      setMessage("内容草稿已生成");
+      setMessage("内容草稿和发布计划已生成");
       await load();
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "操作失败");
     }
   }
 
-  async function updateStatus(item: any, status: string) {
-    const res = await fetch(`/api/topics/${item.id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status }) });
-    if (!res.ok) setMessage((await res.json()).error || "更新失败");
-    else {
-      setMessage("状态已更新");
-      await load();
-    }
-  }
-
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-2xl font-semibold">选题库</h1>
-        <p className="mt-1 text-sm text-muted-foreground">审核、创建、排序选题，并根据选题生成内容草稿。</p>
+        <h1 className="text-2xl font-semibold">选题助手</h1>
+        <p className="mt-1 text-sm text-muted-foreground">不用手动填表，选择方向后用一句话生成选题。</p>
       </div>
       <Card>
-        <CardTitle>新增选题</CardTitle>
-        <div className="mt-4 grid gap-3 md:grid-cols-2">
-          <Input placeholder="标题" value={form.title || ""} onChange={(e) => setForm({ ...form, title: e.target.value })} />
-          <Input placeholder="核心观点" value={form.corePoint || ""} onChange={(e) => setForm({ ...form, corePoint: e.target.value })} />
-          <Input placeholder="目标用户" value={form.targetAudience || ""} onChange={(e) => setForm({ ...form, targetAudience: e.target.value })} />
-          <Input placeholder="用户痛点" value={form.userPainPoint || ""} onChange={(e) => setForm({ ...form, userPainPoint: e.target.value })} />
-          <Input placeholder="平台" value={form.platform || ""} onChange={(e) => setForm({ ...form, platform: e.target.value })} />
-          <Input placeholder="内容类型" value={form.contentType || ""} onChange={(e) => setForm({ ...form, contentType: e.target.value })} />
-          <Textarea placeholder="理由" value={form.reason || ""} onChange={(e) => setForm({ ...form, reason: e.target.value })} />
-          <Textarea placeholder='大纲 JSON，例如 ["开头","论点","结尾"]' value={form.outline || ""} onChange={(e) => setForm({ ...form, outline: e.target.value })} />
+        <div className="flex items-center gap-2">
+          <MessageSquareText className="h-5 w-5" />
+          <CardTitle>对话生成选题</CardTitle>
         </div>
-        <div className="mt-4 flex items-center gap-3"><Button onClick={createTopic}>保存选题</Button><span className="text-sm text-muted-foreground">{message}</span></div>
+        <div className="mt-4 grid gap-3 md:grid-cols-3">
+          <Select value={platform} onChange={(event) => setPlatform(event.target.value)}>
+            {platforms.map((item) => <option key={item}>{item}</option>)}
+          </Select>
+          <Select value={contentType} onChange={(event) => setContentType(event.target.value)}>
+            {contentTypes.map((item) => <option key={item}>{item}</option>)}
+          </Select>
+          <Select value={angle} onChange={(event) => setAngle(event.target.value)}>
+            {angles.map((item) => <option key={item}>{item}</option>)}
+          </Select>
+        </div>
+        <div className="mt-4 flex flex-wrap gap-2">
+          {["我想讲一个让新手马上能用的方法", "我想围绕最近热点表达观点", "我想做一个清单型内容", "我想把一个失败经验讲清楚"].map((option) => (
+            <button key={option} className="border-2 border-black bg-[#fff200] px-3 py-2 text-sm font-semibold shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]" onClick={() => setNote(option)}>
+              {option}
+            </button>
+          ))}
+        </div>
+        <Textarea className="mt-4" value={note} onChange={(event) => setNote(event.target.value)} placeholder="用一句话说你想做的内容，剩下交给系统整理成选题。" />
+        <div className="mt-4 flex flex-wrap items-center gap-3">
+          <Button onClick={createTopic}>
+            <Sparkles className="h-4 w-4" />
+            生成选题
+          </Button>
+          <span className="text-sm text-muted-foreground">{message}</span>
+        </div>
       </Card>
       <div className="grid gap-3">
         {items.map((item) => (
@@ -101,18 +114,10 @@ export function TopicsWorkbench() {
                 <CardTitle>{item.title}</CardTitle>
                 <p className="mt-2 text-sm text-muted-foreground">{item.corePoint || item.reason || "暂无核心观点"}</p>
                 <div className="mt-3 flex flex-wrap gap-2 text-xs text-muted-foreground">
-                  <span>{item.platform}</span><span>{item.contentType}</span><span>流量 {item.trafficScore}</span><span>商业 {item.businessScore}</span><span>难度 {item.difficultyScore}</span><span>{item.status}</span>
+                  <span>{item.platform}</span><span>{item.contentType}</span><span>{item.status}</span>
                 </div>
               </div>
-              <div className="flex flex-wrap gap-2">
-                <Button variant="outline" onClick={() => generateContent(item)}>生成内容</Button>
-                <Select className="w-32" value={item.status} onChange={(e) => updateStatus(item, e.target.value)}>
-                  <option value="draft">draft</option>
-                  <option value="approved">approved</option>
-                  <option value="generating">generating</option>
-                  <option value="archived">archived</option>
-                </Select>
-              </div>
+              <Button variant="outline" onClick={() => generateContent(item)}>生成内容初稿</Button>
             </div>
           </Card>
         ))}

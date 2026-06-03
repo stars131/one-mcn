@@ -39,6 +39,14 @@ const textFields: { key: keyof IpProfile; label: string; placeholder: string }[]
   { key: "toneStyle", label: "语气风格", placeholder: "专业、清晰、可执行" }
 ];
 
+const promptOptions = [
+  "我是新手创作者，想先找到适合我的赛道",
+  "我的目标用户是想提高效率的人",
+  "我想做小红书和公众号",
+  "我的内容需要专业、清晰、可执行",
+  "我希望后续可以做课程、咨询或社群"
+];
+
 function emptyProfile(): IpProfile {
   return {
     id: "",
@@ -192,7 +200,7 @@ export function IpProfileConversation() {
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold">个人 IP 定位</h1>
-          <p className="mt-1 text-sm text-muted-foreground">通过对话累积定位信息，右侧资料用于展示和微调。</p>
+          <p className="mt-1 text-sm text-muted-foreground">先用选项和对话沉淀想法，再在下方微调资料。</p>
         </div>
         <Button variant="outline" onClick={newProfile}>
           <Plus className="h-4 w-4" />
@@ -200,12 +208,24 @@ export function IpProfileConversation() {
         </Button>
       </div>
 
-      <div className="grid gap-5 xl:grid-cols-[minmax(0,0.95fr)_minmax(420px,1.05fr)]">
+      <div className="space-y-5">
         <div className="space-y-5">
           <Card>
             <div className="flex items-center gap-2">
               <MessageSquareText className="h-5 w-5 text-primary" />
               <CardTitle>对话式采集</CardTitle>
+            </div>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {promptOptions.map((option) => (
+                <button
+                  key={option}
+                  type="button"
+                  className="border-2 border-black bg-[#fff200] px-3 py-2 text-sm font-semibold shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition hover:-translate-y-0.5"
+                  onClick={() => setNote((current) => [current, option].filter(Boolean).join("\n"))}
+                >
+                  {option}
+                </button>
+              ))}
             </div>
             <Textarea
               className="mt-4 min-h-44"
