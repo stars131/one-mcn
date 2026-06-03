@@ -11,7 +11,8 @@
     "verify": "npm run test && npm run build",
     "prisma:generate": "prisma generate",
     "prisma:push": "prisma db push",
-    "seed": "tsx scripts/seed.ts"
+    "seed": "tsx scripts/seed.ts",
+    "invite:create": "tsx scripts/create-invite.ts"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",

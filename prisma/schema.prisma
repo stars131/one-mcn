@@ -11,8 +11,10 @@ model User {
   id                 String              @id @default(cuid())
   email              String              @unique
   name               String?
+  activatedAt        DateTime?
   createdAt          DateTime            @default(now())
   updatedAt          DateTime            @updatedAt
+  sessions           AuthSession[]
   ipProfiles         IpProfile[]
   sources            Source[]
   hotTopics          HotTopic[]
@@ -22,6 +24,29 @@ model User {
   contentMetrics     ContentMetric[]
   analyticsSnapshots AnalyticsSnapshot[]
   reviewReports      ReviewReport[]
+}
+
+model InviteCode {
+  id          String    @id @default(cuid())
+  codeHash    String    @unique
+  label       String?
+  maxUses     Int       @default(1)
+  usedCount   Int       @default(0)
+  expiresAt   DateTime?
+  disabledAt  DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model AuthSession {
+  id        String   @id @default(cuid())
+  userId    String
+  tokenHash String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model IpProfile {

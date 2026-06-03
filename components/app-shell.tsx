@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { BarChart3, CalendarDays, FileText, Flame, Gauge, PenLine, Radar, Settings, Sparkles, UserRound } from "lucide-react";
+import { LogoutButton } from "@/components/logout-button";
 
 const nav = [
   { href: "/dashboard", label: "仪表盘", icon: Gauge },
@@ -33,9 +34,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </Link>
           ))}
         </nav>
-        <div className="absolute bottom-4 left-3 right-3 rounded-lg border bg-[#f7f4ed] p-3 text-xs text-muted-foreground">
-          <p className="font-medium text-foreground">推广版入口已启用</p>
-          <p className="mt-1">首页面向用户，侧边栏保留完整运营后台。</p>
+        <div className="absolute bottom-4 left-3 right-3 space-y-2">
+          <div className="rounded-lg border bg-[#f7f4ed] p-3 text-xs text-muted-foreground">
+            <p className="font-medium text-foreground">推广版入口已启用</p>
+            <p className="mt-1">首页面向用户，侧边栏保留完整运营后台。</p>
+          </div>
+          <LogoutButton />
         </div>
       </aside>
       <main className="lg:pl-64">

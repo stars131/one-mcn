@@ -43,6 +43,15 @@ AI_API_KEY=""
 AI_BASE_URL=""
 AI_MODEL="gpt-4o-mini"
 GITHUB_TOKEN=""
+INITIAL_INVITE_CODE="ONE-MCN-2026"
+```
+
+## 邀请码
+
+默认 seed 会创建 `INITIAL_INVITE_CODE`。也可以手动创建：
+
+```bash
+npm run invite:create -- --code=ONE-MCN-2026 --maxUses=100 --label=early-access
 ```
 
 ## 合规边界
