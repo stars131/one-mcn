@@ -21,21 +21,20 @@ export default async function SettingsPage() {
       </div>
       <Card>
         <CardTitle>AI 模型配置</CardTitle>
-        <p className="mt-2 text-sm text-muted-foreground">默认使用服务器积分模型；也可以切换为自带 Key，由用户自己的模型服务完成调用。</p>
         <div className="mt-4">
           <ModelSettingsForm initial={{ ...config, hasCustomKey: Boolean(preference?.apiKey) }} />
         </div>
       </Card>
-      <Card>
-        <CardTitle>运营配置</CardTitle>
-        <div className="mt-4 grid gap-3 md:grid-cols-2">
+      <details className="border-4 border-black bg-white p-5 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+        <summary className="cursor-pointer text-base font-semibold">运营配置</summary>
+        <div className="mt-4 animate-[panel-in_180ms_ease-out] grid gap-3 md:grid-cols-2">
           <Input placeholder="热点接口 URL，例如 http://127.0.0.1:4100/api/hot-topics" />
           <Input placeholder="默认平台，例如 小红书,公众号" />
           <Input placeholder="默认采集频率，例如 daily" />
           <Input placeholder="默认 IP Profile ID" />
         </div>
         <Button className="mt-4" variant="outline">保存到环境配置</Button>
-      </Card>
+      </details>
     </div>
   );
 }
