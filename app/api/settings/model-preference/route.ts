@@ -7,33 +7,55 @@ import { prisma } from "@/lib/db/prisma";
 
 const preferenceSchema = z.object({
   mode: z.enum(["server_credits", "custom"]),
-  provider: z.string().min(1).default("newapi"),
-  baseUrl: z.string().optional().nullable(),
-  textModel: z.string().optional().nullable(),
-  multimodalModel: z.string().optional().nullable(),
-  imageModel: z.string().optional().nullable(),
-  apiKey: z.string().optional().nullable()
+  selectedConfigId: z.string().optional().nullable(),
+  configs: z.array(z.object({
+    id: z.string().optional(),
+    name: z.string().min(1),
+    provider: z.string().min(1).default("newapi"),
+    baseUrl: z.string().min(1),
+    textModel: z.string().min(1),
+    multimodalModel: z.string().min(1),
+    imageModel: z.string().min(1),
+    apiKey: z.string().optional().nullable()
+  })).default([])
 });
 
 export async function PUT(request: Request) {
   try {
     const user = await requireCurrentUser();
     const body = await readJson(request, preferenceSchema);
-    const data = {
-      mode: body.mode,
-      provider: body.provider,
-      baseUrl: body.baseUrl || null,
-      textModel: body.textModel || null,
-      multimodalModel: body.multimodalModel || null,
-      imageModel: body.imageModel || null,
-      ...(body.apiKey ? { apiKey: body.apiKey } : {})
-    };
+    const savedConfigs = [];
+    if (body.mode === "custom") {
+      const incomingIds = body.configs.map((config) => config.id).filter((id): id is string => Boolean(id));
+      await prisma.userModelConfig.deleteMany({ where: { userId: user.id, id: { notIn: incomingIds.length ? incomingIds : [""] } } });
+      for (const config of body.configs) {
+        const existing = config.id ? await prisma.userModelConfig.findFirst({ where: { id: config.id, userId: user.id } }) : null;
+        const data = {
+          name: config.name,
+          provider: config.provider,
+          baseUrl: config.baseUrl,
+          textModel: config.textModel,
+          multimodalModel: config.multimodalModel,
+          imageModel: config.imageModel,
+          ...(config.apiKey ? { apiKey: config.apiKey } : {})
+        };
+        savedConfigs.push(
+          existing
+            ? await prisma.userModelConfig.update({ where: { id: existing.id }, data })
+            : await prisma.userModelConfig.create({ data: { userId: user.id, ...data } })
+        );
+      }
+    }
+    const selectedConfigId =
+      body.mode === "custom"
+        ? savedConfigs.find((config) => config.id === body.selectedConfigId)?.id || savedConfigs[0]?.id || null
+        : (await prisma.userModelPreference.findUnique({ where: { userId: user.id }, select: { selectedConfigId: true } }))?.selectedConfigId || null;
     const preference = await prisma.userModelPreference.upsert({
       where: { userId: user.id },
-      update: data,
-      create: { userId: user.id, ...data }
+      update: { mode: body.mode, selectedConfigId },
+      create: { userId: user.id, mode: body.mode, selectedConfigId }
     });
-    return ok({ ...preference, apiKey: preference.apiKey ? "configured" : null });
+    return ok({ preference, configs: savedConfigs.map((config) => ({ ...config, apiKey: config.apiKey ? "configured" : null })) });
   } catch (error) {
     return apiError(error);
   }

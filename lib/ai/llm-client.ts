@@ -6,6 +6,7 @@ type Message = { role: "system" | "user" | "assistant"; content: string };
 type ModelConfig = {
   mode: "server_credits" | "custom";
   provider: string;
+  selectedConfigId?: string | null;
   apiKey?: string | null;
   baseUrl: string;
   textModel: string;
@@ -48,14 +49,19 @@ export async function getModelConfig(): Promise<ModelConfig> {
   if (!user) return server;
   const preference = await prisma.userModelPreference.findUnique({ where: { userId: user.id } });
   if (preference?.mode === "custom") {
+    const selected =
+      (preference.selectedConfigId ? await prisma.userModelConfig.findFirst({ where: { id: preference.selectedConfigId, userId: user.id } }) : null) ||
+      (await prisma.userModelConfig.findFirst({ where: { userId: user.id }, orderBy: { createdAt: "asc" } }));
+    if (!selected) return { ...server, mode: "custom", apiKey: null, credits: user.aiCredits };
     return {
       mode: "custom",
-      provider: preference.provider,
-      apiKey: preference.apiKey,
-      baseUrl: preference.baseUrl || server.baseUrl,
-      textModel: preference.textModel || server.textModel,
-      multimodalModel: preference.multimodalModel || server.multimodalModel,
-      imageModel: preference.imageModel || server.imageModel,
+      selectedConfigId: selected.id,
+      provider: selected.provider,
+      apiKey: selected.apiKey,
+      baseUrl: selected.baseUrl,
+      textModel: selected.textModel,
+      multimodalModel: selected.multimodalModel,
+      imageModel: selected.imageModel,
       credits: user.aiCredits
     };
   }

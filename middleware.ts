@@ -11,7 +11,8 @@ const protectedPrefixes = [
   "/calendar",
   "/analytics",
   "/reports",
-  "/settings"
+  "/settings",
+  "/admin"
 ];
 
 export function middleware(request: NextRequest) {

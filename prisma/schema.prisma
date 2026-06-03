@@ -19,6 +19,7 @@ model User {
   sessions           AuthSession[]
   operatingAccounts  OperatingAccount[]
   modelPreference    UserModelPreference?
+  modelConfigs       UserModelConfig[]
   ipProfiles         IpProfile[]
   sources            Source[]
   hotTopics          HotTopic[]
@@ -34,15 +35,35 @@ model UserModelPreference {
   id              String   @id @default(cuid())
   userId          String   @unique
   mode            String   @default("server_credits")
+  selectedConfigId String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  selectedConfig  UserModelConfig? @relation(fields: [selectedConfigId], references: [id], onDelete: SetNull)
+}
+
+model UserModelConfig {
+  id              String   @id @default(cuid())
+  userId          String
+  name            String
   provider        String   @default("newapi")
-  baseUrl         String?
-  textModel       String?
-  multimodalModel String?
-  imageModel      String?
+  baseUrl         String
+  textModel       String
+  multimodalModel String
+  imageModel      String
   apiKey          String?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
   user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  preferences     UserModelPreference[]
+
+  @@index([userId])
+}
+
+model AppSetting {
+  key       String   @id
+  value     Json     @default("{}")
+  updatedAt DateTime @updatedAt
 }
 
 model OperatingAccount {

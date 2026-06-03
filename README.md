@@ -46,6 +46,7 @@ AI_MULTIMODAL_MODEL="deepseek-v4-pro"
 AI_IMAGE_MODEL="deepseek-v4-pro"
 GITHUB_TOKEN=""
 INITIAL_INVITE_CODE="ONE-MCN-2026"
+ADMIN_EMAILS="demo@one-mcn.local"
 ```
 
 ## 邀请码
