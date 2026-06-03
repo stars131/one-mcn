@@ -22,8 +22,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <Link href="/dashboard" className="mb-5 flex items-center gap-3 px-2 text-lg font-semibold">
           <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#4a3828] text-primary-foreground">助</span>
           <span>
-            One MCN
-            <span className="block text-xs font-normal text-muted-foreground">个人 IP 运营助手</span>
+            小八的后援团
+            <span className="block text-xs font-normal text-muted-foreground">你的专属MCN，已就位</span>
           </span>
         </Link>
         <nav className="space-y-1">

@@ -59,7 +59,7 @@ export default async function DashboardPage() {
                 AI Agent 驱动的个人 IP 运营台
               </div>
               <h1 className="mt-5 max-w-3xl text-4xl font-semibold leading-tight text-[#241f1a]">
-                从热点到复盘，一个人也能跑完整内容增长闭环
+                你的专属MCN，已就位
               </h1>
               <p className="mt-4 max-w-2xl text-sm leading-7 text-muted-foreground">
                 保留专业后台能力，同时把常用动作收敛成助手式入口：定位、采集、分析、选题、创作、发布、数据和复盘。
@@ -93,7 +93,7 @@ export default async function DashboardPage() {
           <div className="flex items-center gap-3">
             <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/15 text-lg font-semibold">助</span>
             <div>
-              <CardTitle className="text-white">起点小助手</CardTitle>
+              <CardTitle className="text-white">小八助手</CardTitle>
               <p className="text-xs text-white/65">诊断 · 总结 · 引导 · 帮助</p>
             </div>
           </div>

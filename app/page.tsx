@@ -15,7 +15,7 @@ export default function HomePage() {
       <header className="mx-auto flex max-w-7xl items-center justify-between px-5 py-5">
         <Link href="/" className="flex items-center gap-3 font-semibold">
           <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#4a3828] text-white">助</span>
-          One MCN
+          小八的后援团
         </Link>
         <nav className="flex items-center gap-2">
           <Button asChild variant="ghost">
@@ -32,14 +32,14 @@ export default function HomePage() {
         <div className="relative">
           <div className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/70 px-4 py-2 text-sm text-[#6c6258] shadow-sm backdrop-blur">
             <Sparkles className="h-4 w-4 text-[#0f8b8d]" />
-            给个人创作者的一人 MCN 工作台
+            你的专属MCN，已就位
           </div>
           <h1 className="mt-8 max-w-4xl text-5xl font-semibold leading-[1.08] tracking-tight sm:text-6xl lg:text-7xl">
-            简约，不简单。
-            <span className="block text-[#0f8b8d]">从热点到复盘，一次完成。</span>
+            小八的后援团。
+            <span className="block text-[#0f8b8d]">你的专属MCN，已就位。</span>
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-8 text-[#625a50]">
-            One MCN 把 IP 定位、热点发现、AI 选题、内容生成、发布计划和数据复盘收拢到一个清晰的运营闭环里。
+            把 IP 定位、热点发现、AI 选题、内容生成、发布计划和数据复盘收拢到一个清晰的运营闭环里。
           </p>
           <div className="mt-9 flex flex-wrap items-center gap-3">
             <Button asChild className="h-11 rounded-full px-5">
@@ -69,7 +69,7 @@ export default function HomePage() {
                 <div className="flex items-center gap-3">
                   <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/15 text-lg font-semibold">助</span>
                   <div>
-                    <p className="font-semibold">起点小助手</p>
+                    <p className="font-semibold">小八助手</p>
                     <p className="text-xs text-white/60">诊断 · 总结 · 引导 · 帮助</p>
                   </div>
                 </div>

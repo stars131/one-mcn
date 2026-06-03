@@ -7,7 +7,7 @@ export function AuthPageShell({ title, subtitle, children }: { title: string; su
       <div className="mx-auto flex max-w-6xl items-center justify-between">
         <Link href="/" className="flex items-center gap-3 font-semibold">
           <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#4a3828] text-white">助</span>
-          One MCN
+          小八的后援团
         </Link>
       </div>
       <section className="mx-auto grid min-h-[calc(100vh-90px)] max-w-6xl items-center gap-8 lg:grid-cols-[1fr_420px]">
