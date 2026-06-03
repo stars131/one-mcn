@@ -4,8 +4,9 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardTitle } from "@/components/ui/card";
 import { Input, Select, Textarea } from "@/components/ui/input";
+import { MarkdownEditor } from "@/components/markdown-editor";
 
-type Field = { name: string; label: string; type?: "text" | "textarea" | "number" | "select" | "json" | "date"; options?: string[]; placeholder?: string };
+type Field = { name: string; label: string; type?: "text" | "textarea" | "number" | "select" | "json" | "date" | "markdown"; options?: string[]; placeholder?: string };
 
 function parseValue(field: Field, value: string) {
   if (field.type === "number") return Number(value || 0);
@@ -64,7 +65,9 @@ export function ResourceWorkbench({ title, description, endpoint, fields, action
           {fields.map((field) => (
             <label key={field.name} className="space-y-1 text-sm">
               <span className="text-muted-foreground">{field.label}</span>
-              {field.type === "textarea" || field.type === "json" ? (
+              {field.type === "markdown" ? (
+                <MarkdownEditor value={form[field.name] || ""} placeholder={field.placeholder} onChange={(value) => setForm({ ...form, [field.name]: value })} />
+              ) : field.type === "textarea" || field.type === "json" ? (
                 <Textarea value={form[field.name] || ""} placeholder={field.placeholder} onChange={(e) => setForm({ ...form, [field.name]: e.target.value })} />
               ) : field.type === "select" ? (
                 <Select value={form[field.name] || ""} onChange={(e) => setForm({ ...form, [field.name]: e.target.value })}>
