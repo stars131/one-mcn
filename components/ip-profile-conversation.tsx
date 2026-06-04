@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Bot, CheckCircle2, MessageSquareText, Pencil, Plus, Save, Sparkles, UserRound } from "lucide-react";
+import { Bot, Pencil, Plus, Save, Sparkles, UserRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardTitle } from "@/components/ui/card";
 import { Input, Textarea } from "@/components/ui/input";
@@ -63,7 +63,7 @@ const initialMessages: ChatMessage[] = [
   {
     id: "welcome",
     role: "assistant",
-    content: "我是你的人设确定 Agent。我们不用一次想清楚，我会像 GPT 对话一样逐步问问题，每轮给你选项；你点选或补充后，我会把答案沉淀进右侧人设卡。"
+    content: "我是你的人设确定 Agent。我们不用一次想清楚，我会像 GPT 对话一样逐步问问题，每轮给你选项；你点选或补充后，我会把答案沉淀进人设资料。"
   }
 ];
 
@@ -264,48 +264,29 @@ export function IpProfileConversation() {
     setMessage("正在创建新的人设");
   }
 
-  const summaryItems = [
-    ["定位", draft.niche || "待确定"],
-    ["目标用户", draft.targetAudience || "待确定"],
-    ["价值主张", draft.valueProposition || "待确定"],
-    ["语气", draft.toneStyle || "待确定"]
-  ];
+  const summaryText = draft.niche || draft.targetAudience || draft.valueProposition || "还没有确定，先从一个选项开始。";
 
   return (
-    <div className="space-y-5">
+    <div className="mx-auto max-w-3xl space-y-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold">人设</h1>
-          <p className="mt-1 text-sm text-muted-foreground">像和 GPT 对话一样逐步确定人设，系统会把每次选择沉淀到资料里。</p>
+          <p className="mt-1 max-w-xl text-sm text-muted-foreground">回答几个问题，系统会逐步整理出清晰的人设。</p>
         </div>
         <Button variant="outline" onClick={newProfile}>
           <Plus className="h-4 w-4" />
-          新建人设
+          新建
         </Button>
       </div>
 
-      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_380px]">
-        <Card>
-          <div className="flex items-center gap-2">
-            <MessageSquareText className="h-5 w-5 text-primary" />
-            <CardTitle>人设 Agent</CardTitle>
-          </div>
+      <Card>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <CardTitle>人设 Agent</CardTitle>
+          <span className="border-2 border-black bg-[#fff200] px-2 py-1 text-xs font-semibold">{Math.round(completion.score || 0)}%</span>
+        </div>
+        <p className="mt-3 text-sm leading-6 text-muted-foreground">{summaryText}</p>
 
-          <div className="mt-4 grid gap-3 md:grid-cols-4">
-            {starterOptions.map((option) => (
-              <button
-                key={option.label}
-                type="button"
-                className="border-2 border-black bg-[#fff200] p-3 text-left text-sm font-semibold shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition hover:-translate-y-0.5"
-                onClick={() => sendToPersonaAgent(option.value)}
-              >
-                {option.label}
-                <span className="mt-2 block text-xs text-black/60">{option.description}</span>
-              </button>
-            ))}
-          </div>
-
-          <div className="mt-5 max-h-[520px] space-y-3 overflow-auto border-2 border-black bg-[#fffef0] p-3">
+        <div className="mt-5 max-h-[56vh] space-y-3 overflow-auto">
             {chatMessages.map((item) => (
               <div key={item.id} className={item.role === "assistant" ? "flex items-start gap-2" : "flex flex-row-reverse items-start gap-2"}>
                 <span className="flex h-8 w-8 shrink-0 items-center justify-center border-2 border-black bg-white">
@@ -324,16 +305,15 @@ export function IpProfileConversation() {
             ) : null}
           </div>
 
-          <div className="mt-4 flex flex-wrap gap-2">
-            {agentOptions.map((option) => (
+          <div className="mt-5 flex flex-wrap gap-2">
+            {(chatMessages.length === 1 ? starterOptions : agentOptions).map((option) => (
               <button
                 key={`${option.label}-${option.value}`}
                 type="button"
-                className="border-2 border-black bg-white px-3 py-2 text-left text-sm font-semibold shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+                className="border-2 border-black bg-white px-3 py-2 text-left text-sm font-semibold transition hover:bg-[#fff200]"
                 onClick={() => sendToPersonaAgent(option.value)}
               >
                 {option.label}
-                {option.description ? <span className="ml-2 text-xs text-black/50">{option.description}</span> : null}
               </button>
             ))}
           </div>
@@ -341,7 +321,7 @@ export function IpProfileConversation() {
           <Textarea
             className="mt-4 min-h-24"
             value={input}
-            placeholder="也可以直接补充：你的经历、想服务的人、平台倾向、表达风格、变现目标或不想碰的话题。"
+            placeholder="补充你的想法..."
             onChange={(event) => setInput(event.target.value)}
             onKeyDown={(event) => {
               if ((event.metaKey || event.ctrlKey) && event.key === "Enter") sendToPersonaAgent(input);
@@ -354,48 +334,29 @@ export function IpProfileConversation() {
             </Button>
             <span className="text-sm text-muted-foreground">{message}</span>
           </div>
-        </Card>
+      </Card>
 
-        <Card>
-          <div className="flex items-center gap-2">
-            <CheckCircle2 className="h-5 w-5 text-primary" />
-            <CardTitle>人设卡</CardTitle>
-          </div>
-          <div className="mt-4 border-2 border-black bg-[#fff200] p-3">
-            <p className="text-sm text-black/60">完成度</p>
-            <p className="mt-1 text-3xl font-semibold">{Math.round(completion.score || 0)}%</p>
-            {completion.missing.length ? <p className="mt-2 text-xs text-black/60">待补齐：{completion.missing.join("、")}</p> : null}
-          </div>
-          <div className="mt-4 grid gap-3">
-            {summaryItems.map(([label, value]) => (
-              <div key={label} className="border-2 border-black bg-white p-3">
-                <p className="text-xs text-muted-foreground">{label}</p>
-                <p className="mt-1 text-sm font-semibold leading-6">{value}</p>
-              </div>
-            ))}
-          </div>
-          <div className="mt-4 space-y-2">
-            <p className="text-sm text-muted-foreground">平台</p>
-            <div className="flex flex-wrap gap-2">
-              {(draft.platforms.length ? draft.platforms : ["待确定"]).map((item) => (
-                <span key={item} className="border-2 border-black bg-white px-2 py-1 text-xs font-semibold">{item}</span>
-              ))}
+      <details className="border-2 border-black bg-white p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+        <summary className="cursor-pointer text-sm font-semibold">查看人设摘要</summary>
+        <div className="mt-4 grid gap-3 text-sm">
+          {[
+            ["定位", draft.niche || "待确定"],
+            ["目标用户", draft.targetAudience || "待确定"],
+            ["价值主张", draft.valueProposition || "待确定"],
+            ["语气", draft.toneStyle || "待确定"],
+            ["平台", draft.platforms.join("，") || "待确定"]
+          ].map(([label, value]) => (
+            <div key={label} className="border-2 border-black bg-[#fffef0] p-3">
+              <p className="text-xs text-muted-foreground">{label}</p>
+              <p className="mt-1 font-semibold leading-6">{value}</p>
             </div>
-          </div>
-          <div className="mt-4 space-y-2">
-            <p className="text-sm text-muted-foreground">最近沉淀</p>
-            <div className="grid gap-2">
-              {draft.notes.slice(0, 5).map((item, index) => (
-                <div key={`${item}-${index}`} className="border-2 border-black bg-white p-2 text-xs leading-5">{item}</div>
-              ))}
-              {!draft.notes.length ? <p className="text-sm text-muted-foreground">还没有对话记录。</p> : null}
-            </div>
-          </div>
-        </Card>
-      </div>
+          ))}
+        </div>
+      </details>
 
-      <Card>
-        <div className="flex items-center gap-2">
+      <details className="border-2 border-black bg-white p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+        <summary className="cursor-pointer text-sm font-semibold">编辑详细资料</summary>
+        <div className="mt-4 flex items-center gap-2">
           <Pencil className="h-5 w-5 text-primary" />
           <CardTitle>资料展示与修改</CardTitle>
         </div>
@@ -457,7 +418,7 @@ export function IpProfileConversation() {
             </select>
           )}
         </div>
-      </Card>
+      </details>
     </div>
   );
 }
