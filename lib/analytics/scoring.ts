@@ -4,7 +4,11 @@ const weightsByPlatform: Record<string, Record<string, number>> = {
   "小红书": { views: 0.15, likes: 0.12, comments: 0.2, saves: 0.25, shares: 0.08, followers: 0.15, completion: 0.05 },
   "公众号": { views: 0.25, likes: 0.1, comments: 0.1, saves: 0.15, shares: 0.2, followers: 0.15, completion: 0.05 },
   "抖音": { views: 0.15, likes: 0.1, comments: 0.2, saves: 0.1, shares: 0.1, followers: 0.2, completion: 0.15 },
+  "快手": { views: 0.15, likes: 0.1, comments: 0.2, saves: 0.1, shares: 0.1, followers: 0.2, completion: 0.15 },
   "B站": { views: 0.15, likes: 0.1, comments: 0.2, saves: 0.1, shares: 0.1, followers: 0.2, completion: 0.15 },
+  "GitHub": { views: 0.15, likes: 0.25, comments: 0.1, saves: 0.25, shares: 0.1, followers: 0.1, completion: 0.05 },
+  "X": { views: 0.2, likes: 0.15, comments: 0.2, saves: 0.1, shares: 0.2, followers: 0.1, completion: 0.05 },
+  "Facebook": { views: 0.2, likes: 0.15, comments: 0.2, saves: 0.1, shares: 0.2, followers: 0.1, completion: 0.05 },
   "知乎": { views: 0.15, likes: 0.1, comments: 0.2, saves: 0.25, shares: 0.15, followers: 0.1, completion: 0.05 }
 };
 

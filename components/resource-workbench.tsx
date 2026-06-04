@@ -11,6 +11,7 @@ type Field = { name: string; label: string; type?: "text" | "textarea" | "number
 function parseValue(field: Field, value: string) {
   if (field.type === "number") return Number(value || 0);
   if (field.type === "json") return value ? JSON.parse(value) : [];
+  if (field.type === "select") return value || field.options?.[0] || "";
   return value;
 }
 
@@ -70,8 +71,7 @@ export function ResourceWorkbench({ title, description, endpoint, fields, action
               ) : field.type === "textarea" || field.type === "json" ? (
                 <Textarea value={form[field.name] || ""} placeholder={field.placeholder} onChange={(e) => setForm({ ...form, [field.name]: e.target.value })} />
               ) : field.type === "select" ? (
-                <Select value={form[field.name] || ""} onChange={(e) => setForm({ ...form, [field.name]: e.target.value })}>
-                  <option value="">请选择</option>
+                <Select value={form[field.name] || field.options?.[0] || ""} onChange={(e) => setForm({ ...form, [field.name]: e.target.value })}>
                   {field.options?.map((o) => <option key={o}>{o}</option>)}
                 </Select>
               ) : (

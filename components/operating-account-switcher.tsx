@@ -4,7 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, RefreshCw, UserRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Input, Select } from "@/components/ui/input";
+import { defaultPlatform, platformLabels } from "@/lib/platforms/registry";
 
 type OperatingAccount = {
   id: string;
@@ -50,7 +51,7 @@ export function OperatingAccountSwitcher({ accounts, currentId }: { accounts: Op
       const createRes = await fetch("/api/operating-accounts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: trimmed, platform: platform.trim() || undefined })
+        body: JSON.stringify({ name: trimmed, platform: platform.trim() || defaultPlatform })
       });
       if (!createRes.ok) throw new Error((await createRes.json()).error || "创建失败");
       const account = await createRes.json();
@@ -93,7 +94,9 @@ export function OperatingAccountSwitcher({ accounts, currentId }: { accounts: Op
 
       <div className="mt-4 grid gap-2 md:grid-cols-[1fr_160px_auto]">
         <Input value={name} onChange={(event) => setName(event.target.value)} placeholder="新增运营账号名称" />
-        <Input value={platform} onChange={(event) => setPlatform(event.target.value)} placeholder="平台，可选" />
+        <Select value={platform || defaultPlatform} onChange={(event) => setPlatform(event.target.value)}>
+          {platformLabels.map((item) => <option key={item}>{item}</option>)}
+        </Select>
         <Button disabled={loading || !name.trim()} onClick={createAccount}>
           <Plus className="h-4 w-4" />
           新增并切换

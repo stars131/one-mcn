@@ -5,6 +5,7 @@ import { Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Too
 import { Button } from "@/components/ui/button";
 import { Card, CardTitle } from "@/components/ui/card";
 import { Input, Select } from "@/components/ui/input";
+import { defaultPlatform, platformRegistry } from "@/lib/platforms/registry";
 
 export function AnalyticsDashboard() {
   const [data, setData] = useState<any>(null);
@@ -32,7 +33,7 @@ export function AnalyticsDashboard() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         contentId: form.contentId,
-        platform: form.platform || "小红书",
+        platform: form.platform || defaultPlatform,
         views: Number(form.views || 0),
         likes: Number(form.likes || 0),
         comments: Number(form.comments || 0),
@@ -62,9 +63,10 @@ export function AnalyticsDashboard() {
       <Card>
         <CardTitle>平台数据输入方式</CardTitle>
         <div className="mt-4 grid gap-3 md:grid-cols-4">
-          {["小红书数据截图", "公众号阅读数据", "抖音视频数据", "手动表格导入"].map((item) => (
-            <button key={item} className="border-2 border-black bg-[#fff200] p-3 text-left text-sm font-semibold shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-              {item}
+          {platformRegistry.map((platform) => (
+            <button key={platform.id} className="border-2 border-black bg-[#fff200] p-3 text-left text-sm font-semibold shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+              {platform.label}
+              <span className="mt-2 block text-xs text-black/70">{platform.metricInputModes.join(" / ")}</span>
               <span className="mt-2 block text-xs text-black/60">即将支持</span>
             </button>
           ))}
@@ -75,7 +77,10 @@ export function AnalyticsDashboard() {
         <CardTitle>数据录入</CardTitle>
         <div className="mt-4 grid gap-3 md:grid-cols-4">
           <Select value={form.contentId || ""} onChange={(e) => setForm({ ...form, contentId: e.target.value })}><option value="">选择 Content</option>{contents.map((c) => <option key={c.id} value={c.id}>{c.title}</option>)}</Select>
-          {["platform", "views", "likes", "comments", "saves", "shares", "followersGained", "completionRate", "clickRate"].map((key) => <Input key={key} placeholder={key} value={form[key] || ""} onChange={(e) => setForm({ ...form, [key]: e.target.value })} />)}
+          <Select value={form.platform || defaultPlatform} onChange={(e) => setForm({ ...form, platform: e.target.value })}>
+            {platformRegistry.map((platform) => <option key={platform.id}>{platform.label}</option>)}
+          </Select>
+          {["views", "likes", "comments", "saves", "shares", "followersGained", "completionRate", "clickRate"].map((key) => <Input key={key} placeholder={key} value={form[key] || ""} onChange={(e) => setForm({ ...form, [key]: e.target.value })} />)}
         </div>
         <Button className="mt-4" onClick={submitMetric}>保存并重新计算</Button>
       </Card>

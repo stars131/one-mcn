@@ -5,12 +5,15 @@ import { Button } from "@/components/ui/button";
 import { Card, CardTitle } from "@/components/ui/card";
 import { Select } from "@/components/ui/input";
 import { HotspotAccessPanel } from "@/components/hotspot-access-panel";
+import { contentTypeOptions, defaultPlatform, platformLabels } from "@/lib/platforms/registry";
 
 export function HotTopicsWorkbench() {
   const [items, setItems] = useState<any[]>([]);
   const [profiles, setProfiles] = useState<any[]>([]);
   const [sources, setSources] = useState<any[]>([]);
   const [profileId, setProfileId] = useState("");
+  const [platform, setPlatform] = useState(defaultPlatform);
+  const [contentType, setContentType] = useState("图文");
   const [message, setMessage] = useState("");
 
   async function load() {
@@ -50,7 +53,7 @@ export function HotTopicsWorkbench() {
       const res =
         action === "used" || action === "ignored"
           ? await fetch(`/api/hot-topics/${item.id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status: action }) })
-          : await fetch(`/api/hot-topics/${item.id}/${action}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ipProfileId: profileId }) });
+          : await fetch(`/api/hot-topics/${item.id}/${action}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ipProfileId: profileId, platform, contentType }) });
       if (!res.ok) throw new Error((await res.json()).error || "操作失败");
       setMessage(action === "analyze" ? "AI 分析已完成" : action === "generate-topics" ? "选题已生成" : action === "generate-content" ? "内容初稿和发布计划已生成" : "状态已更新");
       await load();
@@ -73,6 +76,18 @@ export function HotTopicsWorkbench() {
             <Select value={profileId} onChange={(e) => setProfileId(e.target.value)}>
               <option value="">请选择</option>
               {profiles.map((profile) => <option key={profile.id} value={profile.id}>{profile.name}</option>)}
+            </Select>
+          </label>
+          <label className="min-w-40 space-y-1 text-sm">
+            <span className="text-muted-foreground">生成平台</span>
+            <Select value={platform} onChange={(e) => setPlatform(e.target.value)}>
+              {platformLabels.map((item) => <option key={item}>{item}</option>)}
+            </Select>
+          </label>
+          <label className="min-w-40 space-y-1 text-sm">
+            <span className="text-muted-foreground">内容类型</span>
+            <Select value={contentType} onChange={(e) => setContentType(e.target.value)}>
+              {contentTypeOptions.map((item) => <option key={item}>{item}</option>)}
             </Select>
           </label>
           <span className="pb-2 text-sm text-muted-foreground">{message}</span>

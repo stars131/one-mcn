@@ -5,15 +5,14 @@ import { MessageSquareText, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardTitle } from "@/components/ui/card";
 import { Select, Textarea } from "@/components/ui/input";
+import { contentTypeOptions, defaultPlatform, platformLabels } from "@/lib/platforms/registry";
 
-const platforms = ["小红书", "公众号", "抖音", "知乎"];
-const contentTypes = ["图文", "短视频脚本", "长文", "问答"];
 const angles = ["解决痛点", "热点观点", "教程清单", "避坑经验", "案例拆解"];
 
 export function TopicsWorkbench() {
   const [items, setItems] = useState<any[]>([]);
   const [note, setNote] = useState("");
-  const [platform, setPlatform] = useState("小红书");
+  const [platform, setPlatform] = useState(defaultPlatform);
   const [contentType, setContentType] = useState("图文");
   const [angle, setAngle] = useState("解决痛点");
   const [message, setMessage] = useState("");
@@ -58,7 +57,7 @@ export function TopicsWorkbench() {
       const res = await fetch(`/api/topics/${item.id}/generate-content`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ platform: item.platform || "小红书", contentType: item.contentType || "图文" })
+        body: JSON.stringify({ platform: item.platform || defaultPlatform, contentType: item.contentType || "图文" })
       });
       if (!res.ok) throw new Error((await res.json()).error || "生成失败");
       setMessage("内容草稿和发布计划已生成");
@@ -81,10 +80,10 @@ export function TopicsWorkbench() {
         </div>
         <div className="mt-4 grid gap-3 md:grid-cols-3">
           <Select value={platform} onChange={(event) => setPlatform(event.target.value)}>
-            {platforms.map((item) => <option key={item}>{item}</option>)}
+            {platformLabels.map((item) => <option key={item}>{item}</option>)}
           </Select>
           <Select value={contentType} onChange={(event) => setContentType(event.target.value)}>
-            {contentTypes.map((item) => <option key={item}>{item}</option>)}
+            {contentTypeOptions.map((item) => <option key={item}>{item}</option>)}
           </Select>
           <Select value={angle} onChange={(event) => setAngle(event.target.value)}>
             {angles.map((item) => <option key={item}>{item}</option>)}

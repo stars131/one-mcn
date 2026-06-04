@@ -5,6 +5,7 @@ import { CheckCircle2, MessageSquareText, Pencil, Plus, Save, Sparkles } from "l
 import { Button } from "@/components/ui/button";
 import { Card, CardTitle } from "@/components/ui/card";
 import { Input, Textarea } from "@/components/ui/input";
+import { platformLabels } from "@/lib/platforms/registry";
 
 type IpProfile = {
   id: string;
@@ -43,6 +44,7 @@ const promptOptions = [
   "我是新手创作者，想先找到适合我的赛道",
   "我的目标用户是想提高效率的人",
   "我想做小红书和公众号",
+  "我想测试抖音、B站和知乎",
   "我的内容需要专业、清晰、可执行",
   "我希望后续可以做课程、咨询或社群"
 ];
@@ -94,22 +96,6 @@ function uniqueList(items: string[]) {
   return Array.from(new Set(items.map((item) => item.trim()).filter(Boolean)));
 }
 
-function inferPatch(profile: IpProfile, note: string): IpProfile {
-  const next = { ...profile, notes: [note, ...profile.notes].slice(0, 20) };
-  if (!next.niche) next.niche = note.slice(0, 32);
-  if (!next.valueProposition && note.length > 24) next.valueProposition = note.slice(0, 72);
-
-  const platformHits = ["小红书", "公众号", "抖音", "视频号", "B站", "知乎", "微博"].filter((item) => note.includes(item));
-  if (platformHits.length) next.platforms = uniqueList([...next.platforms, ...platformHits]);
-
-  const keywordHits = splitList(note)
-    .filter((item) => item.length >= 2 && item.length <= 12)
-    .slice(0, 8);
-  next.keywords = uniqueList([...next.keywords, ...keywordHits]).slice(0, 24);
-
-  return next;
-}
-
 function profilePayload(profile: IpProfile) {
   const { id, ...payload } = profile;
   return payload;
@@ -121,6 +107,8 @@ export function IpProfileConversation() {
   const [draft, setDraft] = useState<IpProfile>(emptyProfile());
   const [note, setNote] = useState("");
   const [message, setMessage] = useState("");
+  const [nextQuestions, setNextQuestions] = useState<string[]>([]);
+  const [collecting, setCollecting] = useState(false);
 
   const selected = useMemo(() => profiles.find((profile) => profile.id === selectedId), [profiles, selectedId]);
 
@@ -161,13 +149,36 @@ export function IpProfileConversation() {
   async function submitNote() {
     const trimmed = note.trim();
     if (!trimmed) return;
+    setCollecting(true);
     try {
-      const saved = await saveProfile(inferPatch(draft, trimmed));
+      const agentRes = await fetch("/api/ip-profiles/agent-collect", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ currentProfile: profilePayload(draft), note: trimmed })
+      });
+      if (!agentRes.ok) throw new Error((await agentRes.json()).error || "AI 采集失败");
+      const agentData = await agentRes.json();
+      const patch = agentData.patch || {};
+      const nextProfile = normalizeProfile({
+        ...draft,
+        ...patch,
+        userPainPoints: uniqueList([...(draft.userPainPoints || []), ...(patch.userPainPoints || [])]),
+        platforms: uniqueList([...(draft.platforms || []), ...(patch.platforms || [])]),
+        monetizationGoals: uniqueList([...(draft.monetizationGoals || []), ...(patch.monetizationGoals || [])]),
+        keywords: uniqueList([...(draft.keywords || []), ...(patch.keywords || [])]).slice(0, 24),
+        competitors: uniqueList([...(draft.competitors || []), ...(patch.competitors || [])]),
+        blockedTopics: uniqueList([...(draft.blockedTopics || []), ...(patch.blockedTopics || [])]),
+        notes: uniqueList([trimmed, ...(patch.notes || []), ...draft.notes]).slice(0, 20)
+      });
+      const saved = await saveProfile(nextProfile);
       setDraft(saved);
       setNote("");
-      setMessage("已累积到个人 IP 资料");
+      setNextQuestions(Array.isArray(agentData.nextQuestions) ? agentData.nextQuestions : []);
+      setMessage("AI Agent 已更新个人 IP 资料");
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "保存失败");
+    } finally {
+      setCollecting(false);
     }
   }
 
@@ -187,6 +198,15 @@ export function IpProfileConversation() {
 
   function updateArrayField(key: keyof IpProfile, value: string) {
     setDraft((current) => ({ ...current, [key]: splitList(value) }));
+  }
+
+  function togglePlatform(platform: string) {
+    setDraft((current) => {
+      const platforms = current.platforms.includes(platform)
+        ? current.platforms.filter((item) => item !== platform)
+        : [...current.platforms, platform];
+      return { ...current, platforms };
+    });
   }
 
   function newProfile() {
@@ -234,12 +254,26 @@ export function IpProfileConversation() {
               onChange={(event) => setNote(event.target.value)}
             />
             <div className="mt-4 flex flex-wrap items-center gap-3">
-              <Button onClick={submitNote}>
+              <Button onClick={submitNote} disabled={collecting}>
                 <Sparkles className="h-4 w-4" />
-                累积到资料
+                {collecting ? "AI 采集中" : "AI 采集到资料"}
               </Button>
               <span className="text-sm text-muted-foreground">{message}</span>
             </div>
+            {nextQuestions.length ? (
+              <div className="mt-4 flex flex-wrap gap-2">
+                {nextQuestions.map((question) => (
+                  <button
+                    key={question}
+                    type="button"
+                    className="border-2 border-black bg-white px-3 py-2 text-left text-sm font-semibold shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+                    onClick={() => setNote((current) => [current, question].filter(Boolean).join("\n"))}
+                  >
+                    {question}
+                  </button>
+                ))}
+              </div>
+            ) : null}
           </Card>
 
           <Card>
@@ -282,12 +316,30 @@ export function IpProfileConversation() {
             {arrayFields.map((field) => (
               <label key={field.key} className="space-y-1 text-sm">
                 <span className="text-muted-foreground">{field.label}</span>
-                <Textarea
-                  className="min-h-24"
-                  value={(draft[field.key] as string[]).join("，")}
-                  placeholder={field.placeholder}
-                  onChange={(event) => updateArrayField(field.key, event.target.value)}
-                />
+                {field.key === "platforms" ? (
+                  <div className="flex min-h-24 flex-wrap content-start gap-2 border-2 border-black bg-white p-2">
+                    {platformLabels.map((platform) => {
+                      const active = draft.platforms.includes(platform);
+                      return (
+                        <button
+                          key={platform}
+                          type="button"
+                          className={active ? "border-2 border-black bg-[#fff200] px-3 py-2 text-sm font-semibold" : "border-2 border-black bg-white px-3 py-2 text-sm font-semibold"}
+                          onClick={() => togglePlatform(platform)}
+                        >
+                          {platform}
+                        </button>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <Textarea
+                    className="min-h-24"
+                    value={(draft[field.key] as string[]).join("，")}
+                    placeholder={field.placeholder}
+                    onChange={(event) => updateArrayField(field.key, event.target.value)}
+                  />
+                )}
               </label>
             ))}
           </div>

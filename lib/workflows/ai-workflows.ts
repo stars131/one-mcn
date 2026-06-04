@@ -2,6 +2,7 @@ import { prompts } from "@/lib/ai/prompts";
 import { generateJson } from "@/lib/ai/llm-client";
 import { prisma } from "@/lib/db/prisma";
 import { calculateRecommendationScore } from "@/lib/analytics/scoring";
+import { defaultPlatform, getPlatform } from "@/lib/platforms/registry";
 
 type HotTopicAnalysis = {
   summary?: string;
@@ -63,7 +64,7 @@ export async function generateTopicsWorkflow(input: { hotTopicId: string; ipProf
       corePoint: String(item.corePoint || ""),
       targetAudience: String(item.targetAudience || ""),
       userPainPoint: String(item.userPainPoint || ""),
-      platform: String(item.platform || "小红书"),
+      platform: String(item.platform || defaultPlatform),
       contentType: String(item.contentType || "图文"),
       trafficScore: Number(item.trafficScore || 0),
       businessScore: Number(item.businessScore || 0),
@@ -76,7 +77,7 @@ export async function generateTopicsWorkflow(input: { hotTopicId: string; ipProf
 
 export async function generateContentWorkflow(input: { topicId: string; platform: string; contentType: string }) {
   const topic = await prisma.topic.findUniqueOrThrow({ where: { id: input.topicId }, include: { ipProfile: true } });
-  const result = await generateJson<any>([{ role: "user", content: prompts.contentGeneration({ topic, ipProfile: topic.ipProfile, platform: input.platform, contentType: input.contentType }) }]);
+  const result = await generateJson<any>([{ role: "user", content: prompts.contentGeneration({ topic, ipProfile: topic.ipProfile, platform: input.platform, platformAdapter: getPlatform(input.platform), contentType: input.contentType }) }]);
   const content = await prisma.content.create({
     data: {
       userId: topic.userId,
@@ -109,7 +110,7 @@ export async function generateContentWorkflow(input: { topicId: string; platform
 
 export async function adaptContentWorkflow(input: { contentId: string; targetPlatform: string }) {
   const content = await prisma.content.findUniqueOrThrow({ where: { id: input.contentId }, include: { topic: { include: { ipProfile: true } } } });
-  const result = await generateJson<any>([{ role: "user", content: prompts.platformAdaptation({ content, topic: content.topic, targetPlatform: input.targetPlatform }) }]);
+  const result = await generateJson<any>([{ role: "user", content: prompts.platformAdaptation({ content, topic: content.topic, targetPlatform: input.targetPlatform, platformAdapter: getPlatform(input.targetPlatform) }) }]);
   return prisma.content.create({
     data: {
       userId: content.userId,
