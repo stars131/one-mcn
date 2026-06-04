@@ -105,6 +105,9 @@ git status --short
   - 热点菜单支持工具文档里的时间范围：`24h`、`3d`、`7d`
   - 热点菜单返回数量选项：5、10、20、50；后端最大兼容热点工具的 100
   - 已新增热点搜集工具健康检查 API：`/api/hot-topics/collector-health`
+  - 热点雷达页面已升级为第一版创作决策工作台：顶部搜索 + 平台筛选 + 指标条 + 热点榜单 + 右侧详情 + 当前人设推荐
+  - 热点雷达不在用户界面突出单一来源；AI HOT 只是当前已接入的数据源之一，后续可继续接入其他平台
+  - 热点详情保留适合原因、创作角度、风险提示、趋势小图和生成内容入口；具体展示方式后续继续按用户反馈调整
   - 外部热点 Agent 对接文档：`docs/hotspot-agent-api.md`
   - 热点菜单使用文档：`docs/hotspot-menu-usage.md`
   - 外部 Agent 配置：`HOTSPOT_AGENT_BASE_URL`、`HOTSPOT_AGENT_API_KEY`、`HOTSPOT_AGENT_TIMEOUT_MS`
