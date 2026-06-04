@@ -114,25 +114,25 @@ export function ModelSettingsForm({ initial }: { initial: ModelSettings }) {
             <button
               key={itemMode}
               type="button"
-              className={`border-2 border-black p-4 text-left transition hover:-translate-y-0.5 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] ${active ? "bg-[#fff200] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]" : "bg-white"}`}
+              className={`rounded-[1.75rem] border p-4 text-left transition hover:-translate-y-0.5 hover:shadow-[0_16px_36px_rgba(120,96,62,0.12)] ${active ? "border-olive-700/20 bg-olive-100" : "border-stone-200 bg-amber-50/70"}`}
               onClick={() => setMode(itemMode as ModelMode)}
             >
               <span className="flex items-center justify-between gap-3 font-black">
                 {title}
                 {active ? <Check className="h-4 w-4" /> : null}
               </span>
-              <span className="mt-2 block text-sm font-medium text-black/70">{text}</span>
+              <span className="mt-2 block text-sm font-medium text-stone-600">{text}</span>
             </button>
           );
         })}
       </div>
 
       {isCreditsMode ? (
-        <div className="animate-[panel-in_180ms_ease-out] border-4 border-black bg-white p-5 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-          <p className="text-sm font-bold text-black/60">当前可用积分</p>
+        <div className="animate-[panel-in_180ms_ease-out] rounded-[2rem] border border-stone-200 bg-card/90 p-5 shadow-[0_18px_45px_rgba(120,96,62,0.12)]">
+          <p className="text-sm font-bold text-stone-500">当前可用积分</p>
           <div className="mt-2 flex items-end justify-between gap-4">
             <p className="text-6xl font-black leading-none">{initial.credits ?? 0}</p>
-            <Zap className="h-10 w-10 text-[#ff2d55]" />
+            <Zap className="h-10 w-10 text-olive-700" />
           </div>
         </div>
       ) : (
@@ -150,10 +150,10 @@ export function ModelSettingsForm({ initial }: { initial: ModelSettings }) {
 
           <div className="space-y-4">
             {configs.map((config, index) => (
-              <details key={config.id || index} open={index === 0} className="border-4 border-black bg-white p-4 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+              <details key={config.id || index} open={index === 0} className="rounded-[2rem] border border-stone-200 bg-card/90 p-4 shadow-[0_18px_45px_rgba(120,96,62,0.12)]">
                 <summary className="cursor-pointer font-black">
                   {config.name || `模型 ${index + 1}`}
-                  {selectedConfigId && selectedConfigId === config.id ? <span className="ml-2 bg-[#00e5ff] px-2 py-0.5 text-xs">当前使用</span> : null}
+                  {selectedConfigId && selectedConfigId === config.id ? <span className="ml-2 rounded-[999px] bg-sage-100 px-2 py-0.5 text-xs text-sage-700">当前使用</span> : null}
                 </summary>
                 <div className="mt-4 grid gap-3 md:grid-cols-2">
                   <label className="space-y-1 text-sm">
@@ -165,7 +165,7 @@ export function ModelSettingsForm({ initial }: { initial: ModelSettings }) {
                     ["多模态模型", "multimodal"],
                     ["生图模型", "image"]
                   ].map(([label, prefix]) => (
-                    <div key={prefix} className="space-y-3 border-2 border-black bg-[#fff9bf] p-3 md:col-span-2">
+                    <div key={prefix} className="space-y-3 rounded-[1.5rem] border border-stone-200 bg-amber-50/70 p-3 md:col-span-2">
                       <p className="font-black">{label}</p>
                       <div className="grid gap-3 md:grid-cols-2">
                         <label className="space-y-1 text-sm">
@@ -209,7 +209,7 @@ export function ModelSettingsForm({ initial }: { initial: ModelSettings }) {
         <Save className="h-4 w-4" />
         保存
       </Button>
-      {message ? <p className="border-2 border-black bg-white p-3 text-sm font-semibold shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">{message}</p> : null}
+      {message ? <p className="rounded-[1.5rem] border border-stone-200 bg-amber-50 p-3 text-sm font-semibold">{message}</p> : null}
     </div>
   );
 }

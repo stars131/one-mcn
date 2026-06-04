@@ -50,7 +50,7 @@ export function HotspotAccessPanel() {
         </div>
         <p className="mt-3 text-sm leading-7 text-muted-foreground">花费积分获取一天的付费热点信息接口，接口地址由管理员维护。</p>
         <div className="mt-4 flex flex-wrap items-center gap-3">
-          <span className="border-2 border-black bg-[#fff200] px-3 py-2 text-sm font-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+          <span className="rounded-[999px] border border-stone-200 bg-amber-100 px-3 py-2 text-sm font-black text-stone-800 shadow-[0_12px_28px_rgba(120,96,62,0.10)]">
             <Zap className="mr-1 inline h-4 w-4" />
             {data?.paidDailyCost ?? 0} 积分/天
           </span>
@@ -60,7 +60,7 @@ export function HotspotAccessPanel() {
           {data?.paidEnabled ? "再次购买" : "购买今日接口"}
         </Button>
       </Card>
-      {message ? <p className="lg:col-span-2 border-2 border-black bg-white p-3 text-sm font-semibold shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">{message}</p> : null}
+      {message ? <p className="rounded-[1.5rem] border border-stone-200 bg-amber-50 p-3 text-sm font-semibold lg:col-span-2">{message}</p> : null}
     </div>
   );
 }

@@ -6,6 +6,17 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        olive: {
+          50: "#f5f6ee",
+          100: "#e7ebd8",
+          700: "#596b36",
+          800: "#405025"
+        },
+        sage: {
+          50: "#eef1e8",
+          100: "#dfe7d5",
+          700: "#617453"
+        },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",

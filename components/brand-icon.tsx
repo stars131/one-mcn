@@ -5,7 +5,7 @@ export function BrandIcon({ className }: { className?: string }) {
     <span
       aria-label="WLWL"
       className={cn(
-        "inline-flex h-10 w-10 items-center justify-center rounded-none border-2 border-black bg-[#fff200] text-[10px] font-black tracking-[-0.04em] text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]",
+        "inline-flex h-10 w-10 items-center justify-center rounded-[38%_62%_44%_56%/52%_38%_62%_48%] border border-olive-700/20 bg-amber-100 text-[10px] font-black text-olive-800 shadow-[0_10px_24px_rgba(120,96,62,0.14)]",
         className
       )}
     >

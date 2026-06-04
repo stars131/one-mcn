@@ -282,17 +282,17 @@ export function IpProfileConversation() {
       <Card>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <CardTitle>人设 Agent</CardTitle>
-          <span className="border-2 border-black bg-[#fff200] px-2 py-1 text-xs font-semibold">{Math.round(completion.score || 0)}%</span>
+          <span className="rounded-[999px] border border-stone-200 bg-amber-100 px-3 py-1 text-xs font-semibold text-olive-800">{Math.round(completion.score || 0)}%</span>
         </div>
         <p className="mt-3 text-sm leading-6 text-muted-foreground">{summaryText}</p>
 
         <div className="mt-5 max-h-[56vh] space-y-3 overflow-auto">
             {chatMessages.map((item) => (
               <div key={item.id} className={item.role === "assistant" ? "flex items-start gap-2" : "flex flex-row-reverse items-start gap-2"}>
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center border-2 border-black bg-white">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[38%_62%_44%_56%/52%_38%_62%_48%] border border-stone-200 bg-amber-50">
                   {item.role === "assistant" ? <Bot className="h-4 w-4" /> : <UserRound className="h-4 w-4" />}
                 </span>
-                <div className={item.role === "assistant" ? "max-w-[86%] border-2 border-black bg-white p-3 text-sm leading-6" : "max-w-[86%] border-2 border-black bg-[#fff200] p-3 text-sm font-medium leading-6"}>
+                <div className={item.role === "assistant" ? "max-w-[86%] rounded-[1.5rem] border border-stone-200 bg-white/85 p-3 text-sm leading-6" : "max-w-[86%] rounded-[1.5rem] border border-olive-700/15 bg-amber-100 p-3 text-sm font-medium leading-6"}>
                   {item.content}
                 </div>
               </div>
@@ -310,7 +310,7 @@ export function IpProfileConversation() {
               <button
                 key={`${option.label}-${option.value}`}
                 type="button"
-                className="border-2 border-black bg-white px-3 py-2 text-left text-sm font-semibold transition hover:bg-[#fff200]"
+                className="rounded-[999px] border border-stone-200 bg-amber-50 px-3 py-2 text-left text-sm font-semibold transition hover:bg-amber-100"
                 onClick={() => sendToPersonaAgent(option.value)}
               >
                 {option.label}
@@ -336,7 +336,7 @@ export function IpProfileConversation() {
           </div>
       </Card>
 
-      <details className="border-2 border-black bg-white p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+      <details className="rounded-[2rem] border border-stone-200 bg-card/90 p-4 shadow-[0_16px_36px_rgba(120,96,62,0.10)]">
         <summary className="cursor-pointer text-sm font-semibold">查看人设摘要</summary>
         <div className="mt-4 grid gap-3 text-sm">
           {[
@@ -346,7 +346,7 @@ export function IpProfileConversation() {
             ["语气", draft.toneStyle || "待确定"],
             ["平台", draft.platforms.join("，") || "待确定"]
           ].map(([label, value]) => (
-            <div key={label} className="border-2 border-black bg-[#fffef0] p-3">
+            <div key={label} className="rounded-[1.5rem] border border-stone-200 bg-amber-50 p-3">
               <p className="text-xs text-muted-foreground">{label}</p>
               <p className="mt-1 font-semibold leading-6">{value}</p>
             </div>
@@ -354,7 +354,7 @@ export function IpProfileConversation() {
         </div>
       </details>
 
-      <details className="border-2 border-black bg-white p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+      <details className="rounded-[2rem] border border-stone-200 bg-card/90 p-4 shadow-[0_16px_36px_rgba(120,96,62,0.10)]">
         <summary className="cursor-pointer text-sm font-semibold">编辑详细资料</summary>
         <div className="mt-4 flex items-center gap-2">
           <Pencil className="h-5 w-5 text-primary" />
@@ -377,14 +377,14 @@ export function IpProfileConversation() {
             <label key={field.key} className="space-y-1 text-sm">
               <span className="text-muted-foreground">{field.label}</span>
               {field.key === "platforms" ? (
-                <div className="flex min-h-24 flex-wrap content-start gap-2 border-2 border-black bg-white p-2">
+                <div className="flex min-h-24 flex-wrap content-start gap-2 rounded-[1.5rem] border border-stone-200 bg-amber-50/70 p-2">
                   {platformLabels.map((platform) => {
                     const active = draft.platforms.includes(platform);
                     return (
                       <button
                         key={platform}
                         type="button"
-                        className={active ? "border-2 border-black bg-[#fff200] px-3 py-2 text-sm font-semibold" : "border-2 border-black bg-white px-3 py-2 text-sm font-semibold"}
+                        className={active ? "rounded-[999px] border border-olive-700/20 bg-olive-100 px-3 py-2 text-sm font-semibold text-olive-800" : "rounded-[999px] border border-stone-200 bg-white px-3 py-2 text-sm font-semibold text-stone-700"}
                         onClick={() => togglePlatform(platform)}
                       >
                         {platform}
@@ -409,7 +409,7 @@ export function IpProfileConversation() {
             保存修改
           </Button>
           {!!profiles.length && (
-            <select className="h-9 rounded-none border-2 border-black bg-white px-3 text-sm" value={selectedId} onChange={(event) => setSelectedId(event.target.value)}>
+            <select className="h-10 rounded-[1.25rem] border border-stone-300 bg-amber-50/70 px-3 text-sm" value={selectedId} onChange={(event) => setSelectedId(event.target.value)}>
               {profiles.map((profile) => (
                 <option key={profile.id} value={profile.id}>
                   {profile.name}

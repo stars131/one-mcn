@@ -21,6 +21,6 @@ export function ReportsWorkbench() {
   return <div className="space-y-5">
     <div><h1 className="text-2xl font-semibold">复盘报告</h1><p className="mt-1 text-sm text-muted-foreground">选择周期生成 AI 复盘，查看历史报告和下一轮选题建议。</p></div>
     <Card><CardTitle>生成复盘</CardTitle><div className="mt-4 flex flex-wrap gap-3"><Input className="max-w-48" type="date" value={periodStart} onChange={(e) => setPeriodStart(e.target.value)} /><Input className="max-w-48" type="date" value={periodEnd} onChange={(e) => setPeriodEnd(e.target.value)} /><Button onClick={generate}>生成 AI 复盘报告</Button><span className="text-sm text-muted-foreground">{message}</span></div></Card>
-    {reports.map((report) => <Card key={report.id}><CardTitle>{report.summary || "复盘报告"}</CardTitle><div className="mt-3 grid gap-3 md:grid-cols-2"><pre className="rounded-none bg-muted p-3 text-xs">{JSON.stringify(report.keyFindings, null, 2)}</pre><pre className="rounded-none bg-muted p-3 text-xs">{JSON.stringify(report.nextTopics, null, 2)}</pre></div></Card>)}
+    {reports.map((report) => <Card key={report.id}><CardTitle>{report.summary || "复盘报告"}</CardTitle><div className="mt-3 grid gap-3 md:grid-cols-2"><pre className="rounded-[1.25rem] bg-muted p-3 text-xs">{JSON.stringify(report.keyFindings, null, 2)}</pre><pre className="rounded-[1.25rem] bg-muted p-3 text-xs">{JSON.stringify(report.nextTopics, null, 2)}</pre></div></Card>)}
   </div>;
 }

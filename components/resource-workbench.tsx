@@ -97,7 +97,7 @@ export function ResourceWorkbench({ title, description, endpoint, fields, action
                 {actions.map((action) => <Button key={action.label} variant="outline" onClick={() => runAction(item, action)}>{action.label}</Button>)}
               </div>
             </div>
-            <pre className="mt-3 max-h-48 overflow-auto rounded-none bg-muted p-3 text-xs">{JSON.stringify(item, null, 2)}</pre>
+            <pre className="mt-3 max-h-48 overflow-auto rounded-[1.25rem] bg-muted p-3 text-xs">{JSON.stringify(item, null, 2)}</pre>
           </Card>
         ))}
         {!items.length && <Card className="text-sm text-muted-foreground">暂无数据，先创建一条记录。</Card>}

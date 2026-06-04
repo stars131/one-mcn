@@ -91,7 +91,7 @@ export function TopicsWorkbench() {
         </div>
         <div className="mt-4 flex flex-wrap gap-2">
           {["我想讲一个让新手马上能用的方法", "我想围绕最近热点表达观点", "我想做一个清单型内容", "我想把一个失败经验讲清楚"].map((option) => (
-            <button key={option} className="border-2 border-black bg-[#fff200] px-3 py-2 text-sm font-semibold shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]" onClick={() => setNote(option)}>
+            <button key={option} className="rounded-[999px] border border-stone-200 bg-amber-50 px-3 py-2 text-sm font-semibold transition hover:bg-amber-100" onClick={() => setNote(option)}>
               {option}
             </button>
           ))}

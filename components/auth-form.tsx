@@ -75,7 +75,7 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
         {loading ? "处理中..." : isRegister ? "创建账号" : "登录工作台"}
         <ArrowRight className="h-4 w-4" />
       </Button>
-      {message ? <p className="border-2 border-black bg-[#ffb3c1] p-3 text-sm font-semibold text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">{message}</p> : null}
+      {message ? <p className="rounded-[1.25rem] border border-amber-300 bg-amber-100 p-3 text-sm font-semibold text-stone-800">{message}</p> : null}
       <p className="text-center text-sm text-muted-foreground">
         {isRegister ? "已有账号？" : "还没有账号？"}
         <Link className="ml-1 font-medium text-primary" href={isRegister ? "/login" : "/register"}>

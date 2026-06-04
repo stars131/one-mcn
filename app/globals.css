@@ -3,17 +3,17 @@
 @tailwind utilities;
 
 :root {
-  --background: 56 100% 96%;
-  --foreground: 0 0% 0%;
-  --card: 0 0% 100%;
-  --card-foreground: 0 0% 0%;
-  --primary: 346 100% 56%;
-  --primary-foreground: 0 0% 0%;
-  --muted: 56 100% 88%;
-  --muted-foreground: 0 0% 18%;
-  --border: 0 0% 0%;
-  --input: 0 0% 0%;
-  --ring: 346 100% 56%;
+  --background: 32 56% 96%;
+  --foreground: 33 28% 18%;
+  --card: 38 45% 98%;
+  --card-foreground: 33 28% 18%;
+  --primary: 79 32% 38%;
+  --primary-foreground: 38 45% 98%;
+  --muted: 39 45% 90%;
+  --muted-foreground: 35 16% 38%;
+  --border: 35 24% 76%;
+  --input: 35 24% 76%;
+  --ring: 78 28% 48%;
 }
 
 * {
@@ -21,12 +21,28 @@
 }
 
 body {
-  background: hsl(var(--background));
+  background:
+    radial-gradient(circle at 15% 10%, hsl(42 74% 91% / 0.58), transparent 28rem),
+    radial-gradient(circle at 88% 18%, hsl(86 24% 78% / 0.32), transparent 24rem),
+    linear-gradient(135deg, hsl(var(--background)), hsl(39 72% 94%));
   color: hsl(var(--foreground));
+  min-height: 100vh;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  opacity: 0.34;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='.22'/%3E%3C/svg%3E");
+  mix-blend-mode: multiply;
 }
 
 ::selection {
-  background: hsl(56 100% 50%);
+  background: hsl(45 83% 78%);
 }
 
 @keyframes panel-in {

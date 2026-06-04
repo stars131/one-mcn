@@ -67,10 +67,10 @@ export function OperatingAccountSwitcher({ accounts, currentId }: { accounts: Op
   const current = accounts.find((account) => account.id === selectedId) || accounts[0];
 
   return (
-    <div className="rounded-none border-2 border-black bg-white p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+    <div className="rounded-[2rem] border border-stone-200 bg-card/90 p-4 shadow-[0_16px_36px_rgba(120,96,62,0.10)]">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex items-center gap-3">
-          <span className="flex h-10 w-10 items-center justify-center rounded-none border-2 border-black bg-[#fff200] text-black">
+          <span className="flex h-10 w-10 items-center justify-center rounded-[38%_62%_44%_56%/52%_38%_62%_48%] border border-olive-700/20 bg-amber-100 text-olive-800">
             <UserRound className="h-5 w-5" />
           </span>
           <div>
@@ -79,7 +79,7 @@ export function OperatingAccountSwitcher({ accounts, currentId }: { accounts: Op
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <select className="h-9 rounded-none border-2 border-black bg-white px-3 text-sm" value={selectedId} disabled={loading} onChange={(event) => switchAccount(event.target.value)}>
+          <select className="h-10 rounded-[1.25rem] border border-stone-300 bg-amber-50/70 px-3 text-sm" value={selectedId} disabled={loading} onChange={(event) => switchAccount(event.target.value)}>
             {accounts.map((account) => (
               <option key={account.id} value={account.id}>
                 {account.platform ? `${account.name} · ${account.platform}` : account.name}

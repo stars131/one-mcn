@@ -64,10 +64,10 @@ export function AnalyticsDashboard() {
         <CardTitle>平台数据输入方式</CardTitle>
         <div className="mt-4 grid gap-3 md:grid-cols-4">
           {platformRegistry.map((platform) => (
-            <button key={platform.id} className="border-2 border-black bg-[#fff200] p-3 text-left text-sm font-semibold shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+            <button key={platform.id} className="rounded-[1.5rem] border border-stone-200 bg-amber-50 p-3 text-left text-sm font-semibold shadow-[0_12px_28px_rgba(120,96,62,0.10)]">
               {platform.label}
-              <span className="mt-2 block text-xs text-black/70">{platform.metricInputModes.join(" / ")}</span>
-              <span className="mt-2 block text-xs text-black/60">即将支持</span>
+              <span className="mt-2 block text-xs text-stone-600">{platform.metricInputModes.join(" / ")}</span>
+              <span className="mt-2 block text-xs text-stone-500">即将支持</span>
             </button>
           ))}
         </div>
