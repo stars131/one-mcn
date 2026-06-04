@@ -264,14 +264,14 @@ export function IpProfileConversation() {
     setMessage("正在创建新的人设");
   }
 
-  const summaryText = draft.niche || draft.targetAudience || draft.valueProposition || "还没有确定，先从一个选项开始。";
+  const summaryText = draft.niche || draft.targetAudience || draft.valueProposition || "从一个选项开始。";
 
   return (
-    <div className="mx-auto max-w-3xl space-y-5">
+    <div className="mx-auto max-w-4xl space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold">人设</h1>
-          <p className="mt-1 max-w-xl text-sm text-muted-foreground">回答几个问题，系统会逐步整理出清晰的人设。</p>
+          <p className="mt-1 max-w-xl text-sm text-muted-foreground/80">回答几个问题，系统会逐步整理出清晰的人设。</p>
         </div>
         <Button variant="outline" onClick={newProfile}>
           <Plus className="h-4 w-4" />
@@ -279,20 +279,22 @@ export function IpProfileConversation() {
         </Button>
       </div>
 
-      <Card>
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <CardTitle>人设 Agent</CardTitle>
-          <span className="rounded-[999px] border border-stone-200 bg-amber-100 px-3 py-1 text-xs font-semibold text-olive-800">{Math.round(completion.score || 0)}%</span>
+      <Card className="rounded-[2.5rem] border-stone-300/80 bg-amber-50/75 p-4 shadow-[0_24px_70px_rgba(120,96,62,0.16)] sm:p-6">
+        <div className="flex flex-wrap items-center justify-between gap-3 px-1">
+          <CardTitle className="text-lg">人设 Agent</CardTitle>
+          <div className="flex items-center gap-2 text-xs text-muted-foreground/70">
+            <span>{summaryText}</span>
+            <span className="rounded-[999px] bg-white/70 px-2 py-1 text-olive-800">{Math.round(completion.score || 0)}%</span>
+          </div>
         </div>
-        <p className="mt-3 text-sm leading-6 text-muted-foreground">{summaryText}</p>
 
-        <div className="mt-5 max-h-[56vh] space-y-3 overflow-auto">
+        <div className="mt-5 min-h-[520px] max-h-[68vh] space-y-4 overflow-auto rounded-[2rem] border border-stone-200 bg-[#fbf7ef] p-4 shadow-inner sm:p-5">
             {chatMessages.map((item) => (
               <div key={item.id} className={item.role === "assistant" ? "flex items-start gap-2" : "flex flex-row-reverse items-start gap-2"}>
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[38%_62%_44%_56%/52%_38%_62%_48%] border border-stone-200 bg-amber-50">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[38%_62%_44%_56%/52%_38%_62%_48%] border border-stone-200 bg-amber-50">
                   {item.role === "assistant" ? <Bot className="h-4 w-4" /> : <UserRound className="h-4 w-4" />}
                 </span>
-                <div className={item.role === "assistant" ? "max-w-[86%] rounded-[1.5rem] border border-stone-200 bg-white/85 p-3 text-sm leading-6" : "max-w-[86%] rounded-[1.5rem] border border-olive-700/15 bg-amber-100 p-3 text-sm font-medium leading-6"}>
+                <div className={item.role === "assistant" ? "max-w-[86%] rounded-[1.75rem] border border-stone-200 bg-white/90 px-4 py-3 text-sm leading-6 shadow-[0_8px_24px_rgba(120,96,62,0.06)]" : "max-w-[86%] rounded-[1.75rem] border border-olive-700/15 bg-amber-100 px-4 py-3 text-sm font-medium leading-6"}>
                   {item.content}
                 </div>
               </div>
@@ -305,12 +307,12 @@ export function IpProfileConversation() {
             ) : null}
           </div>
 
-          <div className="mt-5 flex flex-wrap gap-2">
+          <div className="mt-4 flex flex-wrap gap-2 px-1">
             {(chatMessages.length === 1 ? starterOptions : agentOptions).map((option) => (
               <button
                 key={`${option.label}-${option.value}`}
                 type="button"
-                className="rounded-[999px] border border-stone-200 bg-amber-50 px-3 py-2 text-left text-sm font-semibold transition hover:bg-amber-100"
+                className="rounded-[999px] border border-stone-200 bg-white/65 px-3 py-1.5 text-left text-xs font-semibold text-stone-600 transition hover:bg-amber-100 hover:text-stone-800"
                 onClick={() => sendToPersonaAgent(option.value)}
               >
                 {option.label}
@@ -319,7 +321,7 @@ export function IpProfileConversation() {
           </div>
 
           <Textarea
-            className="mt-4 min-h-24"
+            className="mt-3 min-h-28 bg-white/80"
             value={input}
             placeholder="补充你的想法..."
             onChange={(event) => setInput(event.target.value)}
@@ -327,7 +329,7 @@ export function IpProfileConversation() {
               if ((event.metaKey || event.ctrlKey) && event.key === "Enter") sendToPersonaAgent(input);
             }}
           />
-          <div className="mt-4 flex flex-wrap items-center gap-3">
+          <div className="mt-4 flex flex-wrap items-center gap-3 px-1">
             <Button onClick={() => sendToPersonaAgent(input)} disabled={collecting || !input.trim()}>
               <Sparkles className="h-4 w-4" />
               {collecting ? "生成下一问" : "发送给人设 Agent"}
