@@ -25,7 +25,10 @@ export type IpProfileAgentResult = {
     monetization?: Record<string, unknown>;
     boundary?: Record<string, unknown>;
   };
+  assistantMessage?: string;
+  options?: { label: string; value: string; description?: string }[];
   patch: IpProfileAgentPatch;
+  completion?: { score?: number; missing?: string[] };
   nextQuestions?: string[];
 };
 
@@ -48,29 +51,54 @@ function normalizePatch(patch: IpProfileAgentPatch, note: string): IpProfileAgen
   };
 }
 
-export async function collectIpProfileWithAgents(input: { currentProfile: unknown; note: string }): Promise<IpProfileAgentResult> {
+function normalizeOptions(options: unknown[]) {
+  return options
+    .map((item) => {
+      if (typeof item === "string") return { label: item, value: item };
+      if (!item || typeof item !== "object") return null;
+      const option = item as Record<string, unknown>;
+      const label = typeof option.label === "string" ? option.label.trim() : "";
+      const value = typeof option.value === "string" ? option.value.trim() : label;
+      const description = typeof option.description === "string" ? option.description.trim() : undefined;
+      return label && value ? { label, value, description } : null;
+    })
+    .filter((item): item is { label: string; value: string; description?: string } => Boolean(item))
+    .slice(0, 5);
+}
+
+export async function collectIpProfileWithAgents(input: { currentProfile: unknown; note: string; conversation?: unknown[] }): Promise<IpProfileAgentResult> {
   const result = await generateJson<IpProfileAgentResult>(
     [
       {
         role: "system",
         content:
-          "你是个人 IP 定位总控 agent。你需要模拟 identity、audience、platform、value、monetization、boundary 六个 agent 协作，但只进行一次输出。必须帮助小白用户把零散表达整理为可保存资料。"
+          "你是“人设确定 Agent”，不是表单解析器。你的目标是像 GPT 对话一样逐轮帮助小白确定人设：每轮只推进一个关键问题，给出 3-5 个可选择答案，也允许用户自由补充。必须调用已有上下文，不重复问已明确的信息。"
       },
       {
         role: "user",
-        content: `根据当前资料和新输入，输出 JSON。不要编造过细事实；不确定时给 nextQuestions。平台只能从 platformOptions 中选择。
+        content: `根据当前人设资料、历史对话和用户最新回复，输出下一轮对话 JSON。不要编造过细事实；不确定时用 options 引导用户选择。平台只能从 platformOptions 中选择。
 
 platformOptions:
 ${JSON.stringify(platformPromptContext())}
 
-currentProfile:
+currentPersona:
 ${JSON.stringify(input.currentProfile)}
+
+conversation:
+${JSON.stringify(input.conversation || [])}
 
 newUserInput:
 ${input.note}
 
+规则：
+1. assistantMessage 要像真人助手，先承接用户回答，再提出下一步问题。
+2. options 是用户下一步可点击的选项，每个选项都必须能直接作为用户回复继续对话。
+3. patch 只写可以从上下文合理得出的字段；数组字段要累积，不要覆盖掉已有价值信息。
+4. 如果关键字段已经较完整，可以给“采用当前人设初稿”“更专业”“更真实口语”“更适合小红书/抖音/公众号”等选项。
+5. notes 要包含本轮用户选择或输入的简短事实，便于长期沉淀。
+
 输出格式：
-{"agents":{"identity":{},"audience":{},"platform":{},"value":{},"monetization":{},"boundary":{}},"patch":{"name":"","niche":"","targetAudience":"","userPainPoints":[],"valueProposition":"","toneStyle":"","platforms":[],"monetizationGoals":[],"keywords":[],"competitors":[],"blockedTopics":[],"notes":[]},"nextQuestions":[]}`
+{"assistantMessage":"","options":[{"label":"","value":"","description":""}],"agents":{"identity":{},"audience":{},"platform":{},"value":{},"monetization":{},"boundary":{}},"patch":{"name":"","niche":"","targetAudience":"","userPainPoints":[],"valueProposition":"","toneStyle":"","platforms":[],"monetizationGoals":[],"keywords":[],"competitors":[],"blockedTopics":[],"notes":[]},"completion":{"score":0,"missing":[]},"nextQuestions":[]}`
       }
     ],
     { temperature: 0.2 }
@@ -78,7 +106,13 @@ ${input.note}
 
   return {
     agents: result.agents || {},
+    assistantMessage: result.assistantMessage || "我已经记录这一轮信息。下一步我们继续补齐人设的关键部分。",
+    options: normalizeOptions(result.options || result.nextQuestions || []),
     patch: normalizePatch(result.patch || {}, input.note),
+    completion: {
+      score: Math.max(0, Math.min(100, Number(result.completion?.score || 0))),
+      missing: uniqueList(result.completion?.missing || []).slice(0, 6)
+    },
     nextQuestions: uniqueList(result.nextQuestions || []).slice(0, 6)
   };
 }

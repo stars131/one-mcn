@@ -49,7 +49,7 @@ export function HotTopicsWorkbench() {
 
   async function runAction(item: any, action: "analyze" | "generate-topics" | "generate-content" | "used" | "ignored") {
     try {
-      if ((action === "analyze" || action === "generate-topics" || action === "generate-content") && !profileId) throw new Error("请先创建并选择一个 IP Profile");
+      if ((action === "analyze" || action === "generate-topics" || action === "generate-content") && !profileId) throw new Error("请先创建并选择一个人设");
       const res =
         action === "used" || action === "ignored"
           ? await fetch(`/api/hot-topics/${item.id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status: action }) })
@@ -72,7 +72,7 @@ export function HotTopicsWorkbench() {
       <Card>
         <div className="flex flex-wrap items-end gap-3">
           <label className="min-w-72 flex-1 space-y-1 text-sm">
-            <span className="text-muted-foreground">分析使用的 IP Profile</span>
+            <span className="text-muted-foreground">分析使用的人设</span>
             <Select value={profileId} onChange={(e) => setProfileId(e.target.value)}>
               <option value="">请选择</option>
               {profiles.map((profile) => <option key={profile.id} value={profile.id}>{profile.name}</option>)}

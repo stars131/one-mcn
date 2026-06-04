@@ -5,7 +5,7 @@ import { BrandIcon } from "@/components/brand-icon";
 
 const nav = [
   { href: "/dashboard", label: "仪表盘", icon: Gauge },
-  { href: "/ip-profile", label: "IP 定位", icon: UserRound },
+  { href: "/ip-profile", label: "人设", icon: UserRound },
   { href: "/sources", label: "来源", icon: Radar },
   { href: "/hot-topics", label: "热点", icon: Flame },
   { href: "/topics", label: "选题", icon: Sparkles },

@@ -56,14 +56,16 @@ git status --short
   - 自用模型支持多套配置
   - 每套自用模型里，语言模型、多模态模型、生图模型都可单独设置 Provider / URL / Key / Model
   - 真实服务器模型 key 只在 `.env`，不要提交
-- IP 定位：
-  - 页面上方是对话采集
-  - 对话区提供小白可选提示按钮
+- 人设：
+  - 原“IP 定位”以后统一叫“人设”
+  - 页面上方是参考“起点小助手”的模块卡片 + GPT 式对话
+  - 首屏提供“从零开始 / 我已有账号 / 先定平台 / 先找变现”四个入口
+  - 人设 Agent 每轮调用真实大模型，承接用户回答后提出下一问
+  - 每轮返回助手话术、3-5 个可点击选项、结构化 `patch`、完成度和待补齐项
+  - 用户点击选项或自由输入都会作为聊天消息展示，并累积到 `notes`
   - 已新增真实大模型采集接口：`/api/ip-profiles/agent-collect`
   - 采集 workflow 预留 identity / audience / platform / value / monetization / boundary 六类 agent 输出
-  - AI 返回结构化 `patch` 和 `nextQuestions`，前端将选项继续加入下一轮输入并沉淀到资料
-  - 页面下方是资料展示和修改
-  - 对话内容累积到 `notes`
+  - 页面右侧实时展示人设卡，页面下方保留资料展示和修改
 - 平台适配：
   - 已新增统一平台注册表：小红书、抖音、公众号、快手、B站、GitHub、X、Facebook、知乎
   - 当前先保留平台选项、内容类型、数据录入方式、prompt hints 和 adapter 状态
@@ -75,7 +77,7 @@ git status --short
   - 可花积分购买一天的付费热点接口
   - 热点雷达展示热点列表
   - 不需要手动添加热点
-  - 热点可一键根据热点 + IP Profile 生成内容初稿
+  - 热点可一键根据热点 + 人设生成内容初稿
 - 选题：
   - 已改成对话式入口
   - 用户选择平台、内容类型、方向，再用一句话生成选题
@@ -99,7 +101,7 @@ git status --short
 - LLM 调用：`lib/ai/llm-client.ts`
 - 自用模型设置组件：`components/model-settings-form.tsx`
 - 模型设置 API：`app/api/settings/model-preference/route.ts`
-- IP 对话页组件：`components/ip-profile-conversation.tsx`
+- 人设对话页组件：`components/ip-profile-conversation.tsx`
 - 热点雷达组件：`components/hot-topics-workbench.tsx`
 - 热点访问组件：`components/hotspot-access-panel.tsx`
 - 热点一键生成内容 API：`app/api/hot-topics/[id]/generate-content/route.ts`
@@ -111,8 +113,8 @@ git status --short
 - 系统设置读取：`lib/app-settings.ts`
 - 项目最高规范：`PROJECT_RULES.md`
 - 平台注册表：`lib/platforms/registry.ts`
-- IP Agent 采集 workflow：`lib/workflows/ip-profile-agents.ts`
-- IP Agent 采集 API：`app/api/ip-profiles/agent-collect/route.ts`
+- 人设 Agent 采集 workflow：`lib/workflows/ip-profile-agents.ts`
+- 人设 Agent 采集 API：`app/api/ip-profiles/agent-collect/route.ts`
 
 ## 数据模型要点
 
@@ -183,7 +185,7 @@ systemctl restart one-mcn
 1. 继续降低小白使用门槛：
    - 热点卡片提供“适合我的原因 / 推荐平台 / 生成风格”选择
    - 生成内容前给用户 2-3 个方案选择
-   - IP 对话采集继续升级为真正的多轮 GPT 式体验：每轮 AI 产出选项，用户点击后实时累积上下文
+   - 人设 Agent 后续可把聊天记录持久化为独立表，支持跨设备恢复完整对话
 2. 优化热点展示页：
    - 分免费热点和付费热点标签页
    - 显示热度、推荐理由、适合平台、可生成内容类型

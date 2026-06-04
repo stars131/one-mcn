@@ -7,7 +7,8 @@ import { collectIpProfileWithAgents } from "@/lib/workflows/ip-profile-agents";
 
 const bodySchema = z.object({
   currentProfile: ipProfileSchema.partial().passthrough(),
-  note: z.string().min(1)
+  note: z.string().min(1),
+  conversation: z.array(z.object({ role: z.enum(["assistant", "user"]), content: z.string() })).optional()
 });
 
 export async function POST(request: Request) {

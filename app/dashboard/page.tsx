@@ -11,7 +11,7 @@ import { BrandIcon } from "@/components/brand-icon";
 export const dynamic = "force-dynamic";
 
 const quickActions = [
-  { href: "/ip-profile", label: "诊断 IP 定位", text: "先确定人设、受众、关键词和变现目标。", icon: UserRound, color: "bg-[#4a3828] text-white" },
+  { href: "/ip-profile", label: "确定人设", text: "先确定人设、受众、关键词和变现目标。", icon: UserRound, color: "bg-[#4a3828] text-white" },
   { href: "/sources", label: "接入热点来源", text: "GitHub、RSS、API JSON 和手动热点统一采集。", icon: Radar, color: "bg-[#0f8b8d] text-white" },
   { href: "/hot-topics", label: "分析今日热点", text: "按推荐指数筛选，并用 AI 生成创作角度。", icon: Flame, color: "bg-[#d95d39] text-white" },
   { href: "/topics", label: "生成选题", text: "把热点转成可审核、可生产的选题库。", icon: Sparkles, color: "bg-[#2f5d62] text-white" },
@@ -19,7 +19,7 @@ const quickActions = [
   { href: "/analytics", label: "复盘数据", text: "录入发布表现，自动计算指标和诊断标签。", icon: BarChart3, color: "bg-[#314d5c] text-white" }
 ];
 
-const flow = ["IP 定位", "来源采集", "热点分析", "选题策划", "内容生成", "发布计划", "数据录入", "增长复盘"];
+const flow = ["人设", "来源采集", "热点分析", "选题策划", "内容生成", "发布计划", "数据录入", "增长复盘"];
 
 async function loadDashboardData() {
   const userId = await getDefaultUserId();
@@ -44,7 +44,7 @@ async function loadDashboardData() {
 export default async function DashboardPage() {
   const data = await loadDashboardData();
   const stats = [
-    ["IP 定位", data.ipProfiles],
+    ["人设", data.ipProfiles],
     ["热点来源", data.sources],
     ["热点池", data.hotTopics],
     ["选题库", data.topics],
@@ -64,7 +64,7 @@ export default async function DashboardPage() {
             <div>
               <div className="inline-flex items-center gap-2 rounded-none border-2 border-black bg-[#fff200] px-3 py-1 text-xs text-muted-foreground">
                 <Sparkles className="h-3.5 w-3.5 text-primary" />
-                AI Agent 驱动的个人 IP 运营台
+                AI Agent 驱动的人设运营台
               </div>
               <h1 className="mt-5 max-w-3xl text-4xl font-semibold leading-tight text-[#241f1a]">
                 你的专属MCN，已就位
@@ -106,11 +106,11 @@ export default async function DashboardPage() {
             </div>
           </div>
           <p className="mt-5 text-sm leading-7 text-white/80">
-            推荐先完成 IP 定位，再添加热点来源。采集后进入热点雷达执行 AI 分析，最后把表现数据录入分析页生成复盘。
+            推荐先完成人设，再添加热点来源。采集后进入热点雷达执行 AI 分析，最后把表现数据录入分析页生成复盘。
           </p>
           <div className="mt-5 space-y-3">
             {[
-              ["下一步", data.ipProfiles ? "进入热点雷达，分析可转化热点" : "先创建一个 IP 定位"],
+              ["下一步", data.ipProfiles ? "进入热点雷达，分析可转化热点" : "先创建一个人设"],
               ["本周重点", "优先打通 1 条内容从选题到复盘的链路"],
               ["后台能力", "设置、来源、数据、报告仍完整保留"]
             ].map(([label, text]) => (

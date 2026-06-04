@@ -5,7 +5,7 @@ import { BrandIcon } from "@/components/brand-icon";
 
 const features = [
   { title: "热点接口", text: "通过 URL 获取标准热点信息，主项目专注选题、创作和复盘。", icon: Radar },
-  { title: "AI 选题", text: "结合 IP 定位、热点评分和历史表现，把趋势转成可执行选题。", icon: Sparkles },
+  { title: "AI 选题", text: "结合人设、热点评分和历史表现，把趋势转成可执行选题。", icon: Sparkles },
   { title: "内容工作台", text: "生成草稿、Markdown 编辑、多平台适配和发布计划。", icon: PenLine },
   { title: "数据复盘", text: "录入发布表现，自动计算指标、诊断标签和下一轮建议。", icon: BarChart3 }
 ];
@@ -46,7 +46,7 @@ export default function HomePage() {
             <span className="block bg-[#00e5ff] px-2 text-black">你的专属MCN，已就位。</span>
           </h1>
           <p className="mt-3 max-w-2xl text-base font-medium leading-7 text-black">
-            把 IP 定位、热点发现、AI 选题、内容生成、发布计划和数据复盘收拢到一个清晰的运营闭环里。
+            把人设、热点发现、AI 选题、内容生成、发布计划和数据复盘收拢到一个清晰的运营闭环里。
           </p>
           <div className="mt-4 flex flex-wrap items-center gap-3">
             <Button asChild className="h-10 px-5">
