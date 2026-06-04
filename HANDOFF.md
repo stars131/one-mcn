@@ -108,6 +108,8 @@ git status --short
   - 热点雷达页面已升级为第一版创作决策工作台：顶部搜索 + 平台筛选 + 指标条 + 热点榜单 + 右侧详情 + 当前人设推荐
   - 热点雷达不在用户界面突出单一来源；AI HOT 只是当前已接入的数据源之一，后续可继续接入其他平台
   - 热点详情保留适合原因、创作角度、风险提示、趋势小图和生成内容入口；具体展示方式后续继续按用户反馈调整
+  - 热点详情动作链路：保存为选题 -> `/topics`，生成初稿 -> `/contents`，加入创作计划 -> `/calendar`
+  - 热点 AI 动作已加入统一加载态：按钮禁用、状态文案、轻量骨架和跳动点动画；后续可升级为流式输出
   - 外部热点 Agent 对接文档：`docs/hotspot-agent-api.md`
   - 热点菜单使用文档：`docs/hotspot-menu-usage.md`
   - 外部 Agent 配置：`HOTSPOT_AGENT_BASE_URL`、`HOTSPOT_AGENT_API_KEY`、`HOTSPOT_AGENT_TIMEOUT_MS`
@@ -119,6 +121,10 @@ git status --short
   - 选题可一键生成内容初稿
 - 内容/日历：
   - 从选题或热点生成内容初稿后，会自动创建一条明天的发布计划
+  - `/contents` 已改为内容 Agent 工作台，不再展示手动新增复杂表单
+  - 内容 Agent 通过对话采集平台、内容类型、目标、风格、素材来源，当前先返回结构化预览
+  - 已新增内容 Agent 占位接口：`/api/contents/agent-chat`
+  - 内容预览区展示标题、开头、正文、CTA、标签和最近草稿；真实生成策略和流式输出后续细化
 - 分析：
   - 已按统一平台注册表预留不同平台数据输入方式
   - 数据录入平台改为可选项
@@ -145,6 +151,8 @@ git status --short
 - 热点搜索 API：`app/api/hot-topics/search/route.ts`
 - 热点搜集工具健康检查 API：`app/api/hot-topics/collector-health/route.ts`
 - 热点一键生成内容 API：`app/api/hot-topics/[id]/generate-content/route.ts`
+- 内容 Agent 工作台：`components/content-agent-workbench.tsx`
+- 内容 Agent 占位 API：`app/api/contents/agent-chat/route.ts`
 - 选题对话页组件：`components/topics-workbench.tsx`
 - 分析页组件：`components/analytics-dashboard.tsx`
 - 管理员页：`app/admin/page.tsx`
@@ -230,6 +238,7 @@ systemctl restart one-mcn
 - 热点访问状态
 - 热点搜集工具健康检查：`/api/hot-topics/collector-health` 返回 `mode: external`
 - 热点搜索：`/api/hot-topics/search` 已按 `OpenAI` 关键词调用 AI HOT，并成功入库 3 条热点
+- 内容 Agent 占位接口：`/api/contents/agent-chat` 已验证可返回 assistantMessage、options 和 draftPreview
 
 ## 下一步建议
 

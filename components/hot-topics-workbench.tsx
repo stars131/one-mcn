@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { CalendarPlus, CheckCircle2, Flame, LineChart, Search, Sparkles, Target, Wand2 } from "lucide-react";
+import { CalendarPlus, CheckCircle2, Flame, LineChart, ListPlus, Search, Sparkles, Target, Wand2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardTitle } from "@/components/ui/card";
 import { Input, Select, Textarea } from "@/components/ui/input";
@@ -47,7 +48,18 @@ function angleTitle(angle: any) {
   return typeof angle === "string" ? angle : angle?.title || angle?.hook || "创作角度";
 }
 
+function LoadingDots() {
+  return (
+    <span className="inline-flex items-center gap-1">
+      <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-current [animation-delay:-0.2s]" />
+      <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-current [animation-delay:-0.1s]" />
+      <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-current" />
+    </span>
+  );
+}
+
 export function HotTopicsWorkbench() {
+  const router = useRouter();
   const [items, setItems] = useState<any[]>([]);
   const [profiles, setProfiles] = useState<any[]>([]);
   const [profileId, setProfileId] = useState("");
@@ -60,6 +72,7 @@ export function HotTopicsWorkbench() {
   const [count, setCount] = useState(10);
   const [selectedId, setSelectedId] = useState("");
   const [searching, setSearching] = useState(false);
+  const [actionState, setActionState] = useState<{ id: string; label: string } | null>(null);
   const [message, setMessage] = useState("");
 
   async function load() {
@@ -94,6 +107,7 @@ export function HotTopicsWorkbench() {
     const lowRisk = visibleItems.filter((item) => riskLevel(item) === "low").length;
     return { total, heat, match, lowRisk };
   }, [visibleItems]);
+  const selectedAction = actionState && selected && actionState.id === selected.id ? actionState : null;
 
   async function searchHotspots() {
     const trimmed = keyword.trim();
@@ -136,18 +150,45 @@ export function HotTopicsWorkbench() {
     }
   }
 
-  async function runAction(item: any, action: "analyze" | "generate-topics" | "generate-content" | "used" | "ignored") {
+  async function runAction(item: any, action: "analyze" | "generate-topics" | "generate-content" | "plan-content" | "used" | "ignored") {
+    const actionLabel =
+      action === "analyze"
+        ? "AI 正在分析热点"
+        : action === "generate-topics"
+          ? "AI 正在保存为选题"
+          : action === "generate-content"
+            ? "AI 正在生成内容初稿"
+            : action === "plan-content"
+              ? "AI 正在加入创作计划"
+              : "正在更新状态";
     try {
-      if ((action === "analyze" || action === "generate-topics" || action === "generate-content") && !profileId) throw new Error("请先创建并选择一个人设");
+      if ((action === "analyze" || action === "generate-topics" || action === "generate-content" || action === "plan-content") && !profileId) throw new Error("请先创建并选择一个人设");
+      setActionState({ id: item.id, label: actionLabel });
+      setMessage(actionLabel);
       const res =
         action === "used" || action === "ignored"
           ? await fetch(`/api/hot-topics/${item.id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status: action }) })
-          : await fetch(`/api/hot-topics/${item.id}/${action}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ipProfileId: profileId, platform, contentType }) });
+          : await fetch(`/api/hot-topics/${item.id}/${action === "plan-content" ? "generate-content" : action}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ipProfileId: profileId, platform, contentType }) });
       if (!res.ok) throw new Error((await res.json()).error || "操作失败");
-      setMessage(action === "analyze" ? "AI 分析已完成" : action === "generate-topics" ? "选题已生成" : action === "generate-content" ? "内容初稿和发布计划已生成" : "状态已更新");
+      setMessage(
+        action === "analyze"
+          ? "AI 分析已完成"
+          : action === "generate-topics"
+            ? "选题已保存"
+            : action === "generate-content"
+              ? "内容初稿已生成"
+              : action === "plan-content"
+                ? "已加入创作计划"
+                : "状态已更新"
+      );
       await load();
+      if (action === "generate-topics") router.push("/topics");
+      if (action === "generate-content") router.push("/contents");
+      if (action === "plan-content") router.push("/calendar");
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "操作失败");
+    } finally {
+      setActionState(null);
     }
   }
 
@@ -214,7 +255,7 @@ export function HotTopicsWorkbench() {
         </div>
         <div className="mt-4 flex flex-wrap gap-2">
           <Button onClick={searchHotspots} disabled={searching}>
-            <Search className="h-4 w-4" />
+            {searching ? <LoadingDots /> : <Search className="h-4 w-4" />}
             {searching ? "提取中" : "提取热点"}
           </Button>
           {[allPlatforms, ...platformLabels].map((item) => (
@@ -307,6 +348,19 @@ export function HotTopicsWorkbench() {
           <Card className="rounded-[2rem] border-stone-300/80 bg-card/85">
             {selected ? (
               <>
+                {selectedAction ? (
+                  <div className="mb-4 rounded-[1.5rem] border border-olive-700/15 bg-olive-50 p-3 text-sm font-semibold text-olive-900">
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="h-4 w-4 animate-pulse" />
+                      {selectedAction.label}
+                      <LoadingDots />
+                    </div>
+                    <div className="mt-3 space-y-2">
+                      <div className="h-2 w-full animate-pulse rounded-full bg-olive-200" />
+                      <div className="h-2 w-2/3 animate-pulse rounded-full bg-amber-200" />
+                    </div>
+                  </div>
+                ) : null}
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <CardTitle>{selected.title}</CardTitle>
@@ -343,9 +397,10 @@ export function HotTopicsWorkbench() {
                   <p className="mt-2 text-sm leading-6 text-muted-foreground">{asArray(selected.rawMetrics?.riskNotes).join("，") || "注意核对来源事实，不夸大结论，不制造焦虑。"}</p>
                 </div>
                 <div className="mt-5 flex flex-wrap gap-2">
-                  <Button variant="outline" onClick={() => runAction(selected, "analyze")}><Sparkles className="h-4 w-4" />AI 分析</Button>
-                  <Button onClick={() => runAction(selected, "generate-content")}><Wand2 className="h-4 w-4" />生成初稿</Button>
-                  <Button variant="ghost" onClick={() => runAction(selected, "used")}><CalendarPlus className="h-4 w-4" />已使用</Button>
+                  <Button variant="outline" disabled={Boolean(actionState)} onClick={() => runAction(selected, "generate-topics")}><ListPlus className="h-4 w-4" />保存为选题</Button>
+                  <Button disabled={Boolean(actionState)} onClick={() => runAction(selected, "generate-content")}><Wand2 className="h-4 w-4" />生成初稿</Button>
+                  <Button variant="outline" disabled={Boolean(actionState)} onClick={() => runAction(selected, "plan-content")}><CalendarPlus className="h-4 w-4" />加入创作计划</Button>
+                  <Button variant="ghost" disabled={Boolean(actionState)} onClick={() => runAction(selected, "analyze")}><Sparkles className="h-4 w-4" />AI 分析</Button>
                 </div>
               </>
             ) : (
