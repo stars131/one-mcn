@@ -21,6 +21,8 @@ model User {
   modelPreference    UserModelPreference?
   modelConfigs       UserModelConfig[]
   ipProfiles         IpProfile[]
+  personaConversations PersonaConversation[]
+  personaMessages    PersonaMessage[]
   sources            Source[]
   hotTopics          HotTopic[]
   topics             Topic[]
@@ -85,6 +87,8 @@ model OperatingAccount {
   updatedAt          DateTime            @updatedAt
   user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
   ipProfiles         IpProfile[]
+  personaConversations PersonaConversation[]
+  personaMessages    PersonaMessage[]
   sources            Source[]
   hotTopics          HotTopic[]
   topics             Topic[]
@@ -142,8 +146,50 @@ model IpProfile {
   operatingAccount  OperatingAccount? @relation(fields: [operatingAccountId], references: [id], onDelete: SetNull)
   hotTopics         HotTopic[]
   topics            Topic[]
+  personaConversations PersonaConversation[]
 
   @@index([userId, operatingAccountId])
+}
+
+model PersonaConversation {
+  id                 String     @id @default(cuid())
+  userId             String
+  operatingAccountId String?
+  ipProfileId        String?
+  title              String
+  status             String     @default("active")
+  currentPrompt      String?
+  lastUserAnswer     String?
+  lastAssistantReply String?
+  options            Json       @default("[]")
+  completion         Json       @default("{}")
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @updatedAt
+  user               User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  operatingAccount   OperatingAccount? @relation(fields: [operatingAccountId], references: [id], onDelete: SetNull)
+  ipProfile          IpProfile? @relation(fields: [ipProfileId], references: [id], onDelete: SetNull)
+  messages           PersonaMessage[]
+
+  @@index([userId, operatingAccountId])
+  @@index([ipProfileId])
+}
+
+model PersonaMessage {
+  id                 String     @id @default(cuid())
+  userId             String
+  operatingAccountId String?
+  conversationId     String
+  role               String
+  content            String
+  patch              Json       @default("{}")
+  options            Json       @default("[]")
+  createdAt          DateTime   @default(now())
+  user               User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  operatingAccount   OperatingAccount? @relation(fields: [operatingAccountId], references: [id], onDelete: SetNull)
+  conversation       PersonaConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([userId, operatingAccountId])
+  @@index([conversationId, createdAt])
 }
 
 model Source {

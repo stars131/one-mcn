@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { Bot, Pencil, Plus, Save, Sparkles, UserRound } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Bot, History, Pencil, Plus, Save, Sparkles, UserRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardTitle } from "@/components/ui/card";
 import { Input, Textarea } from "@/components/ui/input";
@@ -23,10 +23,11 @@ type IpProfile = {
   notes: string[];
 };
 
-type ChatMessage = {
+type PersonaMessage = {
   id: string;
   role: "assistant" | "user";
   content: string;
+  createdAt?: string;
 };
 
 type PersonaOption = {
@@ -34,6 +35,26 @@ type PersonaOption = {
   value: string;
   description?: string;
 };
+
+type PersonaConversation = {
+  id: string;
+  title: string;
+  currentPrompt?: string | null;
+  lastUserAnswer?: string | null;
+  lastAssistantReply?: string | null;
+  options?: PersonaOption[];
+  completion?: { score?: number; missing?: string[] };
+  updatedAt?: string;
+  messages?: PersonaMessage[];
+  ipProfile?: Partial<IpProfile> | null;
+};
+
+const starterOptions: PersonaOption[] = [
+  { label: "从零开始", value: "我从零开始做人设，请先问我第一个最关键的问题。" },
+  { label: "我已有账号", value: "我已经有账号了，请先帮我诊断并梳理现有人设。" },
+  { label: "先定平台", value: "我想先确定适合我的平台，再反推人设。" },
+  { label: "先找变现", value: "我想先找到变现方向，再确定人设和内容。" }
+];
 
 const arrayFields: { key: keyof IpProfile; label: string; placeholder: string }[] = [
   { key: "platforms", label: "平台", placeholder: "小红书、公众号、抖音" },
@@ -50,21 +71,6 @@ const textFields: { key: keyof IpProfile; label: string; placeholder: string }[]
   { key: "targetAudience", label: "目标用户", placeholder: "谁最需要你" },
   { key: "valueProposition", label: "价值主张", placeholder: "你能持续提供什么价值" },
   { key: "toneStyle", label: "语气风格", placeholder: "专业、清晰、可执行" }
-];
-
-const starterOptions: PersonaOption[] = [
-  { label: "从零开始", value: "我从零开始做人设，请先问我第一个最关键的问题。", description: "适合还没有明确方向" },
-  { label: "我已有账号", value: "我已经有账号了，请先帮我诊断并梳理现有人设。", description: "从现状做定位优化" },
-  { label: "先定平台", value: "我想先确定适合我的平台，再反推人设。", description: "围绕平台建立内容表达" },
-  { label: "先找变现", value: "我想先找到变现方向，再确定人设和内容。", description: "围绕商业目标设计人设" }
-];
-
-const initialMessages: ChatMessage[] = [
-  {
-    id: "welcome",
-    role: "assistant",
-    content: "我是你的人设确定 Agent。我们不用一次想清楚，我会像 GPT 对话一样逐步问问题，每轮给你选项；你点选或补充后，我会把答案沉淀进人设资料。"
-  }
 ];
 
 function emptyProfile(): IpProfile {
@@ -89,17 +95,17 @@ function asArray(value: unknown) {
   return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
 }
 
-function normalizeProfile(item: Partial<IpProfile>): IpProfile {
+function normalizeProfile(item?: Partial<IpProfile> | null): IpProfile {
   return {
     ...emptyProfile(),
-    ...item,
-    userPainPoints: asArray(item.userPainPoints),
-    platforms: asArray(item.platforms),
-    monetizationGoals: asArray(item.monetizationGoals),
-    keywords: asArray(item.keywords),
-    competitors: asArray(item.competitors),
-    blockedTopics: asArray(item.blockedTopics),
-    notes: asArray(item.notes)
+    ...(item || {}),
+    userPainPoints: asArray(item?.userPainPoints),
+    platforms: asArray(item?.platforms),
+    monetizationGoals: asArray(item?.monetizationGoals),
+    keywords: asArray(item?.keywords),
+    competitors: asArray(item?.competitors),
+    blockedTopics: asArray(item?.blockedTopics),
+    notes: asArray(item?.notes)
   };
 }
 
@@ -110,128 +116,115 @@ function splitList(value: string) {
     .filter(Boolean);
 }
 
-function uniqueList(items: string[]) {
-  return Array.from(new Set(items.map((item) => item.trim()).filter(Boolean)));
-}
-
 function profilePayload(profile: IpProfile) {
   const { id, ...payload } = profile;
   return payload;
 }
 
-function chatId() {
-  return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-}
-
-function mergeProfile(current: IpProfile, patch: Partial<IpProfile>, userInput: string) {
-  return normalizeProfile({
-    ...current,
-    ...patch,
-    userPainPoints: uniqueList([...(current.userPainPoints || []), ...asArray(patch.userPainPoints)]),
-    platforms: uniqueList([...(current.platforms || []), ...asArray(patch.platforms)]),
-    monetizationGoals: uniqueList([...(current.monetizationGoals || []), ...asArray(patch.monetizationGoals)]),
-    keywords: uniqueList([...(current.keywords || []), ...asArray(patch.keywords)]).slice(0, 24),
-    competitors: uniqueList([...(current.competitors || []), ...asArray(patch.competitors)]),
-    blockedTopics: uniqueList([...(current.blockedTopics || []), ...asArray(patch.blockedTopics)]),
-    notes: uniqueList([`用户选择：${userInput}`, ...asArray(patch.notes), ...current.notes]).slice(0, 30)
-  });
+function lastByRole(messages: PersonaMessage[] | undefined, role: "assistant" | "user") {
+  return [...(messages || [])].reverse().find((message) => message.role === role);
 }
 
 export function IpProfileConversation() {
-  const [profiles, setProfiles] = useState<IpProfile[]>([]);
-  const [selectedId, setSelectedId] = useState("");
+  const [conversations, setConversations] = useState<PersonaConversation[]>([]);
+  const [current, setCurrent] = useState<PersonaConversation | null>(null);
   const [draft, setDraft] = useState<IpProfile>(emptyProfile());
   const [input, setInput] = useState("");
   const [message, setMessage] = useState("");
-  const [chatMessages, setChatMessages] = useState<ChatMessage[]>(initialMessages);
-  const [agentOptions, setAgentOptions] = useState<PersonaOption[]>(starterOptions);
-  const [completion, setCompletion] = useState<{ score: number; missing: string[] }>({ score: 0, missing: ["定位", "目标用户", "平台", "商业化"] });
-  const [collecting, setCollecting] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [sending, setSending] = useState(false);
 
-  const selected = useMemo(() => profiles.find((profile) => profile.id === selectedId), [profiles, selectedId]);
-
-  async function load() {
-    const res = await fetch("/api/ip-profiles");
-    if (!res.ok) throw new Error("加载失败");
-    const data = (await res.json()).map((item: Partial<IpProfile>) => normalizeProfile(item));
-    setProfiles(data);
-    const current = data.find((item: IpProfile) => item.id === selectedId) || data[0];
-    if (current) {
-      setSelectedId(current.id);
-      setDraft(current);
+  async function loadConversations(selectId?: string) {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/persona-conversations");
+      if (!res.ok) throw new Error("加载会话失败");
+      let list = await res.json();
+      if (!Array.isArray(list) || !list.length) {
+        const created = await fetch("/api/persona-conversations", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ title: "新的人设对话" })
+        });
+        if (!created.ok) throw new Error("创建会话失败");
+        const item = await created.json();
+        list = [item];
+      }
+      setConversations(list);
+      await selectConversation(selectId || list[0].id);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "加载失败");
+    } finally {
+      setLoading(false);
     }
   }
 
+  async function selectConversation(id: string) {
+    const res = await fetch(`/api/persona-conversations/${id}`);
+    if (!res.ok) throw new Error("加载会话失败");
+    const item = await res.json();
+    setCurrent(item);
+    setDraft(normalizeProfile(item.ipProfile));
+    setInput("");
+  }
+
   useEffect(() => {
-    load().catch((error) => setMessage(error.message));
+    loadConversations().catch((error) => setMessage(error.message));
   }, []);
 
-  useEffect(() => {
-    if (selected) setDraft(selected);
-  }, [selected]);
-
-  async function saveProfile(next: IpProfile) {
-    const isNew = !next.id;
-    const res = await fetch(isNew ? "/api/ip-profiles" : `/api/ip-profiles/${next.id}`, {
-      method: isNew ? "POST" : "PUT",
+  async function newConversation() {
+    setMessage("");
+    const res = await fetch("/api/persona-conversations", {
+      method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(profilePayload(next))
+      body: JSON.stringify({ title: "新的人设对话" })
     });
-    if (!res.ok) throw new Error((await res.json()).error || "保存失败");
-    const saved = normalizeProfile(await res.json());
-    setSelectedId(saved.id);
-    await load();
-    return saved;
+    if (!res.ok) {
+      setMessage("创建会话失败");
+      return;
+    }
+    const item = await res.json();
+    setConversations((items) => [item, ...items]);
+    setCurrent(item);
+    setDraft(normalizeProfile(item.ipProfile));
+    setInput("");
   }
 
   async function sendToPersonaAgent(value: string) {
     const trimmed = value.trim();
-    if (!trimmed || collecting) return;
-    const userMessage: ChatMessage = { id: chatId(), role: "user", content: trimmed };
-    const nextConversation = [...chatMessages, userMessage];
-    setChatMessages(nextConversation);
-    setInput("");
-    setCollecting(true);
+    if (!trimmed || !current || sending) return;
+    setSending(true);
     setMessage("");
-
+    setInput("");
     try {
-      const agentRes = await fetch("/api/ip-profiles/agent-collect", {
+      const res = await fetch(`/api/persona-conversations/${current.id}/messages`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          currentProfile: profilePayload(draft),
-          note: trimmed,
-          conversation: nextConversation.map(({ role, content }) => ({ role, content }))
-        })
+        body: JSON.stringify({ content: trimmed })
       });
-      if (!agentRes.ok) throw new Error((await agentRes.json()).error || "人设 Agent 失败");
-      const agentData = await agentRes.json();
-      const nextProfile = mergeProfile(draft, agentData.patch || {}, trimmed);
-      const saved = await saveProfile(nextProfile);
-      const assistantMessage: ChatMessage = {
-        id: chatId(),
-        role: "assistant",
-        content: String(agentData.assistantMessage || "我已记录。我们继续补齐下一块人设信息。")
-      };
-      setDraft(saved);
-      setChatMessages((current) => [...current, assistantMessage]);
-      setAgentOptions(Array.isArray(agentData.options) && agentData.options.length ? agentData.options : starterOptions);
-      setCompletion({
-        score: Number(agentData.completion?.score || 0),
-        missing: Array.isArray(agentData.completion?.missing) ? agentData.completion.missing : []
-      });
-      setMessage("人设 Agent 已更新资料");
+      if (!res.ok) throw new Error((await res.json()).error || "人设 Agent 失败");
+      const data = await res.json();
+      setCurrent(data.conversation);
+      setDraft(normalizeProfile(data.ipProfile));
+      await loadConversations(data.conversation.id);
+      setMessage("已留档，并进入下一问");
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "保存失败");
+      setMessage(error instanceof Error ? error.message : "发送失败");
     } finally {
-      setCollecting(false);
+      setSending(false);
     }
   }
 
   async function saveDraft() {
+    if (!draft.id) return;
     try {
-      const saved = await saveProfile(draft);
-      setDraft(saved);
+      const res = await fetch(`/api/ip-profiles/${draft.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(profilePayload(draft))
+      });
+      if (!res.ok) throw new Error((await res.json()).error || "保存失败");
+      setDraft(normalizeProfile(await res.json()));
       setMessage("修改已保存");
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "保存失败");
@@ -239,68 +232,87 @@ export function IpProfileConversation() {
   }
 
   function updateField(key: keyof IpProfile, value: string) {
-    setDraft((current) => ({ ...current, [key]: value }));
+    setDraft((item) => ({ ...item, [key]: value }));
   }
 
   function updateArrayField(key: keyof IpProfile, value: string) {
-    setDraft((current) => ({ ...current, [key]: splitList(value) }));
+    setDraft((item) => ({ ...item, [key]: splitList(value) }));
   }
 
   function togglePlatform(platform: string) {
-    setDraft((current) => {
-      const platforms = current.platforms.includes(platform)
-        ? current.platforms.filter((item) => item !== platform)
-        : [...current.platforms, platform];
-      return { ...current, platforms };
-    });
+    setDraft((item) => ({
+      ...item,
+      platforms: item.platforms.includes(platform) ? item.platforms.filter((value) => value !== platform) : [...item.platforms, platform]
+    }));
   }
 
-  function newProfile() {
-    setSelectedId("");
-    setDraft(emptyProfile());
-    setChatMessages(initialMessages);
-    setAgentOptions(starterOptions);
-    setCompletion({ score: 0, missing: ["定位", "目标用户", "平台", "商业化"] });
-    setMessage("正在创建新的人设");
-  }
-
-  const summaryText = draft.niche || draft.targetAudience || draft.valueProposition || "从一个选项开始。";
+  const lastUser = lastByRole(current?.messages, "user");
+  const lastAssistant = lastByRole(current?.messages, "assistant");
+  const currentOptions = Array.isArray(current?.options) && current?.options?.length ? current.options : starterOptions;
+  const completionScore = Number(current?.completion?.score || 0);
+  const prompt = lastAssistant?.content || current?.currentPrompt || "我们先从一个方向开始。";
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold">人设</h1>
-          <p className="mt-1 max-w-xl text-sm text-muted-foreground/80">回答几个问题，系统会逐步整理出清晰的人设。</p>
-        </div>
-        <Button variant="outline" onClick={newProfile}>
-          <Plus className="h-4 w-4" />
-          新建
-        </Button>
-      </div>
-
-      <Card className="rounded-[2.5rem] border-stone-300/80 bg-amber-50/75 p-4 shadow-[0_24px_70px_rgba(120,96,62,0.16)] sm:p-6">
-        <div className="flex flex-wrap items-center justify-between gap-3 px-1">
-          <CardTitle className="text-lg">人设 Agent</CardTitle>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground/70">
-            <span>{summaryText}</span>
-            <span className="rounded-[999px] bg-white/70 px-2 py-1 text-olive-800">{Math.round(completion.score || 0)}%</span>
+    <div className="grid min-h-[calc(100vh-118px)] gap-5 lg:grid-cols-[280px_minmax(0,1fr)]">
+      <aside className="rounded-[2rem] border border-stone-200 bg-card/85 p-3 shadow-[0_16px_36px_rgba(120,96,62,0.10)]">
+        <div className="flex items-center justify-between gap-2 px-2 py-2">
+          <div className="flex items-center gap-2">
+            <History className="h-4 w-4 text-olive-700" />
+            <span className="text-sm font-semibold">人设对话</span>
           </div>
+          <Button variant="ghost" onClick={newConversation}>
+            <Plus className="h-4 w-4" />
+          </Button>
+        </div>
+        <div className="mt-2 space-y-1">
+          {conversations.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              className={item.id === current?.id ? "w-full rounded-[1.25rem] bg-olive-100 px-3 py-2 text-left text-sm font-semibold text-olive-800" : "w-full rounded-[1.25rem] px-3 py-2 text-left text-sm text-muted-foreground transition hover:bg-amber-100 hover:text-foreground"}
+              onClick={() => selectConversation(item.id).catch((error) => setMessage(error.message))}
+            >
+              <span className="block truncate">{item.title}</span>
+              <span className="mt-1 block truncate text-xs opacity-70">{item.lastUserAnswer || "还没有回答"}</span>
+            </button>
+          ))}
+          {!conversations.length && !loading ? <p className="px-3 py-2 text-sm text-muted-foreground">暂无会话</p> : null}
+        </div>
+      </aside>
+
+      <main className="space-y-5">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h1 className="text-2xl font-semibold">人设</h1>
+            <p className="mt-1 text-sm text-muted-foreground/80">旧对话自动留档，当前只显示上一轮回答和下一问。</p>
+          </div>
+          <span className="rounded-[999px] bg-white/70 px-3 py-1 text-xs font-semibold text-olive-800">{Math.round(completionScore)}%</span>
         </div>
 
-        <div className="mt-5 min-h-[520px] max-h-[68vh] space-y-4 overflow-auto rounded-[2rem] border border-stone-200 bg-[#fbf7ef] p-4 shadow-inner sm:p-5">
-            {chatMessages.map((item) => (
-              <div key={item.id} className={item.role === "assistant" ? "flex items-start gap-2" : "flex flex-row-reverse items-start gap-2"}>
+        <Card className="rounded-[2.5rem] border-stone-300/80 bg-amber-50/75 p-4 shadow-[0_24px_70px_rgba(120,96,62,0.16)] sm:p-6">
+          <div className="min-h-[520px] rounded-[2rem] border border-stone-200 bg-[#fbf7ef] p-4 shadow-inner sm:p-6">
+            {lastUser ? (
+              <div className="mb-5 flex flex-row-reverse items-start gap-2">
                 <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[38%_62%_44%_56%/52%_38%_62%_48%] border border-stone-200 bg-amber-50">
-                  {item.role === "assistant" ? <Bot className="h-4 w-4" /> : <UserRound className="h-4 w-4" />}
+                  <UserRound className="h-4 w-4" />
                 </span>
-                <div className={item.role === "assistant" ? "max-w-[86%] rounded-[1.75rem] border border-stone-200 bg-white/90 px-4 py-3 text-sm leading-6 shadow-[0_8px_24px_rgba(120,96,62,0.06)]" : "max-w-[86%] rounded-[1.75rem] border border-olive-700/15 bg-amber-100 px-4 py-3 text-sm font-medium leading-6"}>
-                  {item.content}
+                <div className="max-w-[86%] rounded-[1.75rem] border border-olive-700/15 bg-amber-100 px-4 py-3 text-sm font-medium leading-6">
+                  {lastUser.content}
                 </div>
               </div>
-            ))}
-            {collecting ? (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            ) : null}
+
+            <div className="flex items-start gap-2">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[38%_62%_44%_56%/52%_38%_62%_48%] border border-stone-200 bg-amber-50">
+                <Bot className="h-4 w-4" />
+              </span>
+              <div className="max-w-[86%] rounded-[1.75rem] border border-stone-200 bg-white/90 px-4 py-3 text-sm leading-6 shadow-[0_8px_24px_rgba(120,96,62,0.06)]">
+                {prompt}
+              </div>
+            </div>
+
+            {sending ? (
+              <div className="mt-5 flex items-center gap-2 text-sm text-muted-foreground">
                 <Sparkles className="h-4 w-4 animate-pulse" />
                 人设 Agent 正在思考下一步问题...
               </div>
@@ -308,7 +320,7 @@ export function IpProfileConversation() {
           </div>
 
           <div className="mt-4 flex flex-wrap gap-2 px-1">
-            {(chatMessages.length === 1 ? starterOptions : agentOptions).map((option) => (
+            {currentOptions.map((option) => (
               <button
                 key={`${option.label}-${option.value}`}
                 type="button"
@@ -323,104 +335,90 @@ export function IpProfileConversation() {
           <Textarea
             className="mt-3 min-h-28 bg-white/80"
             value={input}
-            placeholder="补充你的想法..."
+            placeholder="回答当前问题..."
             onChange={(event) => setInput(event.target.value)}
             onKeyDown={(event) => {
               if ((event.metaKey || event.ctrlKey) && event.key === "Enter") sendToPersonaAgent(input);
             }}
           />
           <div className="mt-4 flex flex-wrap items-center gap-3 px-1">
-            <Button onClick={() => sendToPersonaAgent(input)} disabled={collecting || !input.trim()}>
+            <Button onClick={() => sendToPersonaAgent(input)} disabled={sending || !input.trim() || !current}>
               <Sparkles className="h-4 w-4" />
-              {collecting ? "生成下一问" : "发送给人设 Agent"}
+              {sending ? "生成下一问" : "发送"}
             </Button>
             <span className="text-sm text-muted-foreground">{message}</span>
           </div>
-      </Card>
+        </Card>
 
-      <details className="rounded-[2rem] border border-stone-200 bg-card/90 p-4 shadow-[0_16px_36px_rgba(120,96,62,0.10)]">
-        <summary className="cursor-pointer text-sm font-semibold">查看人设摘要</summary>
-        <div className="mt-4 grid gap-3 text-sm">
-          {[
-            ["定位", draft.niche || "待确定"],
-            ["目标用户", draft.targetAudience || "待确定"],
-            ["价值主张", draft.valueProposition || "待确定"],
-            ["语气", draft.toneStyle || "待确定"],
-            ["平台", draft.platforms.join("，") || "待确定"]
-          ].map(([label, value]) => (
-            <div key={label} className="rounded-[1.5rem] border border-stone-200 bg-amber-50 p-3">
-              <p className="text-xs text-muted-foreground">{label}</p>
-              <p className="mt-1 font-semibold leading-6">{value}</p>
-            </div>
-          ))}
-        </div>
-      </details>
+        <details className="rounded-[2rem] border border-stone-200 bg-card/90 p-4 shadow-[0_16px_36px_rgba(120,96,62,0.10)]">
+          <summary className="cursor-pointer text-sm font-semibold">查看完整留档</summary>
+          <div className="mt-4 max-h-72 space-y-2 overflow-auto text-sm">
+            {(current?.messages || []).map((item) => (
+              <div key={item.id} className="rounded-[1.25rem] bg-amber-50 p-3">
+                <p className="text-xs text-muted-foreground">{item.role === "assistant" ? "Agent" : "我"}</p>
+                <p className="mt-1 leading-6">{item.content}</p>
+              </div>
+            ))}
+          </div>
+        </details>
 
-      <details className="rounded-[2rem] border border-stone-200 bg-card/90 p-4 shadow-[0_16px_36px_rgba(120,96,62,0.10)]">
-        <summary className="cursor-pointer text-sm font-semibold">编辑详细资料</summary>
-        <div className="mt-4 flex items-center gap-2">
-          <Pencil className="h-5 w-5 text-primary" />
-          <CardTitle>资料展示与修改</CardTitle>
-        </div>
-        <div className="mt-4 grid gap-3 md:grid-cols-2">
-          {textFields.map((field) => (
-            <label key={field.key} className={field.key === "valueProposition" ? "space-y-1 text-sm md:col-span-2" : "space-y-1 text-sm"}>
-              <span className="text-muted-foreground">{field.label}</span>
-              {field.key === "valueProposition" ? (
-                <Textarea value={String(draft[field.key] || "")} placeholder={field.placeholder} onChange={(event) => updateField(field.key, event.target.value)} />
-              ) : (
-                <Input value={String(draft[field.key] || "")} placeholder={field.placeholder} onChange={(event) => updateField(field.key, event.target.value)} />
-              )}
-            </label>
-          ))}
-        </div>
-        <div className="mt-4 grid gap-3 md:grid-cols-2">
-          {arrayFields.map((field) => (
-            <label key={field.key} className="space-y-1 text-sm">
-              <span className="text-muted-foreground">{field.label}</span>
-              {field.key === "platforms" ? (
-                <div className="flex min-h-24 flex-wrap content-start gap-2 rounded-[1.5rem] border border-stone-200 bg-amber-50/70 p-2">
-                  {platformLabels.map((platform) => {
-                    const active = draft.platforms.includes(platform);
-                    return (
-                      <button
-                        key={platform}
-                        type="button"
-                        className={active ? "rounded-[999px] border border-olive-700/20 bg-olive-100 px-3 py-2 text-sm font-semibold text-olive-800" : "rounded-[999px] border border-stone-200 bg-white px-3 py-2 text-sm font-semibold text-stone-700"}
-                        onClick={() => togglePlatform(platform)}
-                      >
-                        {platform}
-                      </button>
-                    );
-                  })}
-                </div>
-              ) : (
-                <Textarea
-                  className="min-h-24"
-                  value={(draft[field.key] as string[]).join("，")}
-                  placeholder={field.placeholder}
-                  onChange={(event) => updateArrayField(field.key, event.target.value)}
-                />
-              )}
-            </label>
-          ))}
-        </div>
-        <div className="mt-4 flex flex-wrap items-center gap-3">
-          <Button onClick={saveDraft}>
-            <Save className="h-4 w-4" />
-            保存修改
-          </Button>
-          {!!profiles.length && (
-            <select className="h-10 rounded-[1.25rem] border border-stone-300 bg-amber-50/70 px-3 text-sm" value={selectedId} onChange={(event) => setSelectedId(event.target.value)}>
-              {profiles.map((profile) => (
-                <option key={profile.id} value={profile.id}>
-                  {profile.name}
-                </option>
-              ))}
-            </select>
-          )}
-        </div>
-      </details>
+        <details className="rounded-[2rem] border border-stone-200 bg-card/90 p-4 shadow-[0_16px_36px_rgba(120,96,62,0.10)]">
+          <summary className="cursor-pointer text-sm font-semibold">编辑详细资料</summary>
+          <div className="mt-4 flex items-center gap-2">
+            <Pencil className="h-5 w-5 text-primary" />
+            <CardTitle>资料展示与修改</CardTitle>
+          </div>
+          <div className="mt-4 grid gap-3 md:grid-cols-2">
+            {textFields.map((field) => (
+              <label key={field.key} className={field.key === "valueProposition" ? "space-y-1 text-sm md:col-span-2" : "space-y-1 text-sm"}>
+                <span className="text-muted-foreground">{field.label}</span>
+                {field.key === "valueProposition" ? (
+                  <Textarea value={String(draft[field.key] || "")} placeholder={field.placeholder} onChange={(event) => updateField(field.key, event.target.value)} />
+                ) : (
+                  <Input value={String(draft[field.key] || "")} placeholder={field.placeholder} onChange={(event) => updateField(field.key, event.target.value)} />
+                )}
+              </label>
+            ))}
+          </div>
+          <div className="mt-4 grid gap-3 md:grid-cols-2">
+            {arrayFields.map((field) => (
+              <label key={field.key} className="space-y-1 text-sm">
+                <span className="text-muted-foreground">{field.label}</span>
+                {field.key === "platforms" ? (
+                  <div className="flex min-h-24 flex-wrap content-start gap-2 rounded-[1.5rem] border border-stone-200 bg-amber-50/70 p-2">
+                    {platformLabels.map((platform) => {
+                      const active = draft.platforms.includes(platform);
+                      return (
+                        <button
+                          key={platform}
+                          type="button"
+                          className={active ? "rounded-[999px] border border-olive-700/20 bg-olive-100 px-3 py-2 text-sm font-semibold text-olive-800" : "rounded-[999px] border border-stone-200 bg-white px-3 py-2 text-sm font-semibold text-stone-700"}
+                          onClick={() => togglePlatform(platform)}
+                        >
+                          {platform}
+                        </button>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <Textarea
+                    className="min-h-24"
+                    value={(draft[field.key] as string[]).join("，")}
+                    placeholder={field.placeholder}
+                    onChange={(event) => updateArrayField(field.key, event.target.value)}
+                  />
+                )}
+              </label>
+            ))}
+          </div>
+          <div className="mt-4 flex flex-wrap items-center gap-3">
+            <Button onClick={saveDraft} disabled={!draft.id}>
+              <Save className="h-4 w-4" />
+              保存修改
+            </Button>
+          </div>
+        </details>
+      </main>
     </div>
   );
 }

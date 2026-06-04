@@ -60,13 +60,16 @@ git status --short
   - 真实服务器模型 key 只在 `.env`，不要提交
 - 人设：
   - 原“IP 定位”以后统一叫“人设”
-  - 页面是 Apple 式简约：大尺寸单主对话卡 + 明确浅色对话内框 + 轻量完成度 + 折叠摘要/详情
+  - 页面是 GPT 式会话结构：顶部全站导航 + 左侧人设会话历史 + 右侧主对话区
+  - 主对话区只展示当前轮：上一轮用户回答 + 当前 Agent 问题；更早消息只做留档
+  - 页面是 Apple 式简约：大尺寸单主对话卡 + 明确浅色对话内框 + 轻量完成度 + 折叠完整留档/详情
   - 提示、快捷选项和状态信息要弱化存在感，主对话框必须是视觉核心
   - 首轮提供“从零开始 / 我已有账号 / 先定平台 / 先找变现”四个轻量入口
   - 人设 Agent 每轮调用真实大模型，承接用户回答后提出下一问
   - 每轮返回助手话术、3-5 个可点击选项、结构化 `patch`、完成度和待补齐项
   - 用户点击选项或自由输入都会作为聊天消息展示，并累积到 `notes`
   - 已新增真实大模型采集接口：`/api/ip-profiles/agent-collect`
+  - 已新增持久化会话接口：`/api/persona-conversations`
   - 采集 workflow 预留 identity / audience / platform / value / monetization / boundary 六类 agent 输出
   - 人设摘要和详细资料默认折叠，避免首屏复杂
 - 平台适配：
@@ -118,6 +121,8 @@ git status --short
 - 平台注册表：`lib/platforms/registry.ts`
 - 人设 Agent 采集 workflow：`lib/workflows/ip-profile-agents.ts`
 - 人设 Agent 采集 API：`app/api/ip-profiles/agent-collect/route.ts`
+- 人设会话 workflow：`lib/workflows/persona-conversations.ts`
+- 人设会话 API：`app/api/persona-conversations/*`
 
 ## 数据模型要点
 
@@ -133,6 +138,12 @@ git status --short
   - 当前用于保存热点接口配置，key 为 `hotspot_access`
 - `Source`：
   - 普通用户通过免费/付费入口创建，不在页面展示 URL
+- `PersonaConversation`：
+  - GPT 式人设会话，关联用户、运营账号和可选人设
+  - 保存标题、当前问题、上一轮回答、Agent 回复、选项和完成度
+- `PersonaMessage`：
+  - 保存人设会话里的完整 user / assistant 留档
+  - 主界面默认只显示最近一轮，完整记录在折叠留档里查看
 
 ## 环境变量
 
