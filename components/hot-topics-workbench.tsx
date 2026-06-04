@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { RefreshCw, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardTitle } from "@/components/ui/card";
-import { Select } from "@/components/ui/input";
+import { Input, Select, Textarea } from "@/components/ui/input";
 import { HotspotAccessPanel } from "@/components/hotspot-access-panel";
 import { contentTypeOptions, defaultPlatform, platformLabels } from "@/lib/platforms/registry";
 
@@ -14,6 +15,11 @@ export function HotTopicsWorkbench() {
   const [profileId, setProfileId] = useState("");
   const [platform, setPlatform] = useState(defaultPlatform);
   const [contentType, setContentType] = useState("图文");
+  const [keyword, setKeyword] = useState("");
+  const [requirement, setRequirement] = useState("找适合今天创作的热点");
+  const [timeRange, setTimeRange] = useState("24h");
+  const [hotness, setHotness] = useState("rising");
+  const [searching, setSearching] = useState(false);
   const [message, setMessage] = useState("");
 
   async function load() {
@@ -47,6 +53,47 @@ export function HotTopicsWorkbench() {
     }
   }
 
+  async function searchHotspots() {
+    const trimmed = keyword.trim();
+    if (!trimmed) {
+      setMessage("请输入关键词");
+      return;
+    }
+    setSearching(true);
+    setMessage("");
+    try {
+      const profile = profiles.find((item) => item.id === profileId);
+      const res = await fetch("/api/hot-topics/search", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          keyword: trimmed,
+          keywords: trimmed.split(/[,\n，、\s]/).map((item) => item.trim()).filter(Boolean),
+          platforms: [platform],
+          contentTypes: [contentType],
+          ipProfileId: profileId || undefined,
+          requirements: {
+            goal: requirement,
+            audienceLevel: profile?.targetAudience ? "按当前人设" : "小白",
+            timeRange,
+            region: "zh-CN",
+            hotness,
+            riskTolerance: "low",
+            count: 10
+          }
+        })
+      });
+      if (!res.ok) throw new Error((await res.json()).error || "热点搜索失败");
+      const data = await res.json();
+      setMessage(`${data.querySummary || "热点搜索完成"} 新增 ${data.createdCount || 0} 条，返回 ${data.totalCount || 0} 条`);
+      await load();
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "热点搜索失败");
+    } finally {
+      setSearching(false);
+    }
+  }
+
   async function runAction(item: any, action: "analyze" | "generate-topics" | "generate-content" | "used" | "ignored") {
     try {
       if ((action === "analyze" || action === "generate-topics" || action === "generate-content") && !profileId) throw new Error("请先创建并选择一个人设");
@@ -66,34 +113,80 @@ export function HotTopicsWorkbench() {
     <div className="space-y-5">
       <div>
         <h1 className="text-2xl font-semibold">热点雷达</h1>
-        <p className="mt-1 text-sm text-muted-foreground">选择免费或付费热点接口，展示热点后按人设一键生成内容初稿。</p>
+        <p className="mt-1 text-sm text-muted-foreground">输入关键词和创作要求，从热点 Agent 提取适合当前人设的热点摘要。</p>
       </div>
-      <HotspotAccessPanel />
-      <Card>
-        <div className="flex flex-wrap items-end gap-3">
-          <label className="min-w-72 flex-1 space-y-1 text-sm">
-            <span className="text-muted-foreground">分析使用的人设</span>
-            <Select value={profileId} onChange={(e) => setProfileId(e.target.value)}>
-              <option value="">请选择</option>
-              {profiles.map((profile) => <option key={profile.id} value={profile.id}>{profile.name}</option>)}
-            </Select>
-          </label>
-          <label className="min-w-40 space-y-1 text-sm">
-            <span className="text-muted-foreground">生成平台</span>
-            <Select value={platform} onChange={(e) => setPlatform(e.target.value)}>
-              {platformLabels.map((item) => <option key={item}>{item}</option>)}
-            </Select>
-          </label>
-          <label className="min-w-40 space-y-1 text-sm">
-            <span className="text-muted-foreground">内容类型</span>
-            <Select value={contentType} onChange={(e) => setContentType(e.target.value)}>
-              {contentTypeOptions.map((item) => <option key={item}>{item}</option>)}
-            </Select>
-          </label>
-          <span className="pb-2 text-sm text-muted-foreground">{message}</span>
-          <Button onClick={refreshHotspots}>更新热点</Button>
-        </div>
-      </Card>
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_260px]">
+        <Card className="rounded-[2.25rem] border-stone-300/80 bg-amber-50/75 shadow-[0_24px_70px_rgba(120,96,62,0.14)]">
+          <div className="grid gap-3 lg:grid-cols-[minmax(0,1.5fr)_180px_180px]">
+            <label className="space-y-1 text-sm">
+              <span className="text-muted-foreground">热点关键词</span>
+              <Input value={keyword} placeholder="例如：AI自媒体、母婴、职场效率" onChange={(e) => setKeyword(e.target.value)} />
+            </label>
+            <label className="space-y-1 text-sm">
+              <span className="text-muted-foreground">平台</span>
+              <Select value={platform} onChange={(e) => setPlatform(e.target.value)}>
+                {platformLabels.map((item) => <option key={item}>{item}</option>)}
+              </Select>
+            </label>
+            <label className="space-y-1 text-sm">
+              <span className="text-muted-foreground">内容类型</span>
+              <Select value={contentType} onChange={(e) => setContentType(e.target.value)}>
+                {contentTypeOptions.map((item) => <option key={item}>{item}</option>)}
+              </Select>
+            </label>
+          </div>
+          <div className="mt-3 grid gap-3 lg:grid-cols-[minmax(0,1fr)_180px_180px]">
+            <label className="space-y-1 text-sm">
+              <span className="text-muted-foreground">创作要求</span>
+              <Textarea className="min-h-20" value={requirement} onChange={(e) => setRequirement(e.target.value)} />
+            </label>
+            <label className="space-y-1 text-sm">
+              <span className="text-muted-foreground">时间范围</span>
+              <Select value={timeRange} onChange={(e) => setTimeRange(e.target.value)}>
+                <option value="24h">近 24 小时</option>
+                <option value="3d">近 3 天</option>
+                <option value="7d">近 7 天</option>
+                <option value="30d">近 30 天</option>
+              </Select>
+            </label>
+            <label className="space-y-1 text-sm">
+              <span className="text-muted-foreground">热度偏好</span>
+              <Select value={hotness} onChange={(e) => setHotness(e.target.value)}>
+                <option value="rising">上升中</option>
+                <option value="breaking">突发</option>
+                <option value="stable">稳定热</option>
+                <option value="evergreen">长尾</option>
+              </Select>
+            </label>
+          </div>
+          <div className="mt-4 flex flex-wrap items-end gap-3">
+            <label className="min-w-64 flex-1 space-y-1 text-sm">
+              <span className="text-muted-foreground">匹配人设</span>
+              <Select value={profileId} onChange={(e) => setProfileId(e.target.value)}>
+                <option value="">请选择</option>
+                {profiles.map((profile) => <option key={profile.id} value={profile.id}>{profile.name}</option>)}
+              </Select>
+            </label>
+            <Button onClick={searchHotspots} disabled={searching}>
+              <Search className="h-4 w-4" />
+              {searching ? "提取中" : "提取热点"}
+            </Button>
+            <span className="pb-2 text-sm text-muted-foreground">{message}</span>
+          </div>
+        </Card>
+
+        <details className="rounded-[1.75rem] border border-stone-200 bg-card/75 p-3 shadow-[0_12px_28px_rgba(120,96,62,0.08)]">
+          <summary className="cursor-pointer text-sm font-semibold">热点来源</summary>
+          <div className="mt-3 space-y-3">
+            <HotspotAccessPanel compact />
+            <Button variant="outline" className="h-9 w-full text-xs" onClick={refreshHotspots}>
+              <RefreshCw className="h-3.5 w-3.5" />
+              更新已有来源
+            </Button>
+            <p className="text-xs leading-5 text-muted-foreground">后续主流程优先调用外部热点 Agent；这里仅保留接口启用和手动刷新。</p>
+          </div>
+        </details>
+      </div>
       <div className="grid gap-3">
         {sorted.map((item) => (
           <Card key={item.id}>

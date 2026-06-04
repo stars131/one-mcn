@@ -85,11 +85,15 @@ git status --short
   - 后续每个平台单独维护 adapter、指标字段和平台提示词
   - 能用选项的位置不再让用户从空白开始填写平台
 - 热点：
-  - 普通用户不看后台 URL
-  - 可启用免费热点接口
-  - 可花积分购买一天的付费热点接口
-  - 热点雷达展示热点列表
-  - 不需要手动添加热点
+  - “来源”和“热点”合并为一个热点模块，一级导航不再展示“来源”
+  - `/sources` 旧入口会跳转到 `/hot-topics`
+  - 普通用户不看后台 URL，热点来源选择只作为热点页里的小型折叠区
+  - 可启用免费热点接口，也可花积分购买一天的付费热点接口
+  - 热点雷达主流程：输入关键词、平台、内容类型、创作要求和人设，从外部热点 Agent 提取热点摘要并入库
+  - 已新增统一热点搜索接口：`/api/hot-topics/search`
+  - 外部热点 Agent 对接文档：`docs/hotspot-agent-api.md`
+  - 外部 Agent 配置：`HOTSPOT_AGENT_BASE_URL`、`HOTSPOT_AGENT_API_KEY`、`HOTSPOT_AGENT_TIMEOUT_MS`
+  - 未配置外部 Agent 时，搜索接口会在本项目本地热点库做关键词兜底匹配
   - 热点可一键根据热点 + 人设生成内容初稿
 - 选题：
   - 已改成对话式入口
@@ -117,6 +121,9 @@ git status --short
 - 人设对话页组件：`components/ip-profile-conversation.tsx`
 - 热点雷达组件：`components/hot-topics-workbench.tsx`
 - 热点访问组件：`components/hotspot-access-panel.tsx`
+- 热点搜索 workflow：`lib/workflows/search-hot-topics.ts`
+- 外部热点 Agent 接口文档：`docs/hotspot-agent-api.md`
+- 热点搜索 API：`app/api/hot-topics/search/route.ts`
 - 热点一键生成内容 API：`app/api/hot-topics/[id]/generate-content/route.ts`
 - 选题对话页组件：`components/topics-workbench.tsx`
 - 分析页组件：`components/analytics-dashboard.tsx`

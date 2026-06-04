@@ -1,12 +1,11 @@
 import Link from "next/link";
-import { BarChart3, CalendarDays, FileText, Flame, Gauge, PenLine, Radar, Settings, Sparkles, UserRound } from "lucide-react";
+import { BarChart3, CalendarDays, FileText, Flame, Gauge, PenLine, Settings, Sparkles, UserRound } from "lucide-react";
 import { LogoutButton } from "@/components/logout-button";
 import { BrandIcon } from "@/components/brand-icon";
 
 const nav = [
   { href: "/dashboard", label: "仪表盘", icon: Gauge },
   { href: "/ip-profile", label: "人设", icon: UserRound },
-  { href: "/sources", label: "来源", icon: Radar },
   { href: "/hot-topics", label: "热点", icon: Flame },
   { href: "/topics", label: "选题", icon: Sparkles },
   { href: "/contents", label: "内容", icon: PenLine },

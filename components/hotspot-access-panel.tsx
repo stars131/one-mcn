@@ -7,7 +7,7 @@ import { Card, CardTitle } from "@/components/ui/card";
 
 type HotspotAccess = { credits: number; paidDailyCost: number; freeEnabled: boolean; paidEnabled: boolean };
 
-export function HotspotAccessPanel() {
+export function HotspotAccessPanel({ compact = false }: { compact?: boolean }) {
   const [data, setData] = useState<HotspotAccess | null>(null);
   const [message, setMessage] = useState("");
 
@@ -32,31 +32,31 @@ export function HotspotAccessPanel() {
   }
 
   return (
-    <div className="grid gap-5 lg:grid-cols-2">
-      <Card>
+    <div className={compact ? "grid gap-2" : "grid gap-5 lg:grid-cols-2"}>
+      <Card className={compact ? "rounded-[1.5rem] p-3 shadow-[0_10px_24px_rgba(120,96,62,0.08)]" : undefined}>
         <div className="flex items-center gap-2">
-          <Radar className="h-5 w-5" />
-          <CardTitle>免费热点接口</CardTitle>
+          <Radar className={compact ? "h-4 w-4" : "h-5 w-5"} />
+          <CardTitle className={compact ? "text-sm" : undefined}>免费热点接口</CardTitle>
         </div>
-        <p className="mt-3 text-sm leading-7 text-muted-foreground">用于日常试用和基础热点采集，不展示接口地址。</p>
-        <Button className="mt-4" onClick={() => run("/api/hotspot-access/free", "免费热点接口已启用")}>
+        {compact ? null : <p className="mt-3 text-sm leading-7 text-muted-foreground">用于日常试用和基础热点采集，不展示接口地址。</p>}
+        <Button className={compact ? "mt-2 h-8 px-3 text-xs" : "mt-4"} onClick={() => run("/api/hotspot-access/free", "免费热点接口已启用")}>
           {data?.freeEnabled ? "重新启用" : "启用免费接口"}
         </Button>
       </Card>
-      <Card>
+      <Card className={compact ? "rounded-[1.5rem] p-3 shadow-[0_10px_24px_rgba(120,96,62,0.08)]" : undefined}>
         <div className="flex items-center gap-2">
-          <LockKeyhole className="h-5 w-5" />
-          <CardTitle>付费热点接口</CardTitle>
+          <LockKeyhole className={compact ? "h-4 w-4" : "h-5 w-5"} />
+          <CardTitle className={compact ? "text-sm" : undefined}>付费热点接口</CardTitle>
         </div>
-        <p className="mt-3 text-sm leading-7 text-muted-foreground">花费积分获取一天的付费热点信息接口，接口地址由管理员维护。</p>
-        <div className="mt-4 flex flex-wrap items-center gap-3">
-          <span className="rounded-[999px] border border-stone-200 bg-amber-100 px-3 py-2 text-sm font-black text-stone-800 shadow-[0_12px_28px_rgba(120,96,62,0.10)]">
+        {compact ? null : <p className="mt-3 text-sm leading-7 text-muted-foreground">花费积分获取一天的付费热点信息接口，接口地址由管理员维护。</p>}
+        <div className={compact ? "mt-2 flex flex-wrap items-center gap-2" : "mt-4 flex flex-wrap items-center gap-3"}>
+          <span className={compact ? "rounded-[999px] border border-stone-200 bg-amber-100 px-2 py-1 text-xs font-black text-stone-800" : "rounded-[999px] border border-stone-200 bg-amber-100 px-3 py-2 text-sm font-black text-stone-800 shadow-[0_12px_28px_rgba(120,96,62,0.10)]"}>
             <Zap className="mr-1 inline h-4 w-4" />
             {data?.paidDailyCost ?? 0} 积分/天
           </span>
-          <span className="text-sm font-semibold">余额 {data?.credits ?? 0}</span>
+          <span className={compact ? "text-xs font-semibold" : "text-sm font-semibold"}>余额 {data?.credits ?? 0}</span>
         </div>
-        <Button className="mt-4" onClick={() => run("/api/hotspot-access/paid", "已购买今日付费热点接口")}>
+        <Button className={compact ? "mt-2 h-8 px-3 text-xs" : "mt-4"} onClick={() => run("/api/hotspot-access/paid", "已购买今日接口")}>
           {data?.paidEnabled ? "再次购买" : "购买今日接口"}
         </Button>
       </Card>
