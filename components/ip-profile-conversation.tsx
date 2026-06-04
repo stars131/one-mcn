@@ -254,8 +254,8 @@ export function IpProfileConversation() {
   const prompt = lastAssistant?.content || current?.currentPrompt || "我们先从一个方向开始。";
 
   return (
-    <div className={historyOpen ? "grid min-h-[calc(100vh-7rem)] gap-5 lg:grid-cols-[280px_minmax(0,1fr)_320px]" : "grid min-h-[calc(100vh-7rem)] gap-5 lg:grid-cols-[44px_minmax(0,1fr)_320px]"}>
-      <aside className="rounded-[2rem] border border-stone-200 bg-card/85 p-3 shadow-[0_16px_36px_rgba(120,96,62,0.10)]">
+    <div className={historyOpen ? "relative left-1/2 grid min-h-[calc(100vh-7rem)] w-[calc(100vw-2rem)] -translate-x-1/2 gap-3 xl:grid-cols-[220px_minmax(0,1fr)_220px]" : "relative left-1/2 grid min-h-[calc(100vh-7rem)] w-[calc(100vw-2rem)] -translate-x-1/2 gap-3 xl:grid-cols-[44px_minmax(0,1fr)_220px]"}>
+      <aside className="rounded-[1.75rem] border border-stone-200 bg-card/80 p-2 shadow-[0_12px_28px_rgba(120,96,62,0.08)]">
         <div className="flex items-center justify-between gap-2 px-2 py-2">
           <div className={historyOpen ? "flex items-center gap-2" : "hidden"}>
             <History className="h-4 w-4 text-olive-700" />
@@ -289,7 +289,7 @@ export function IpProfileConversation() {
       </aside>
 
       <main className="flex min-h-[calc(100vh-7rem)] flex-col">
-        <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="flex flex-wrap items-start justify-between gap-3 px-2">
           <div>
             <h1 className="text-2xl font-semibold">人设</h1>
             <p className="mt-1 text-sm text-muted-foreground/80">旧对话自动留档，当前只显示上一轮回答和下一问。</p>
@@ -297,7 +297,7 @@ export function IpProfileConversation() {
           <span className="rounded-[999px] bg-white/70 px-3 py-1 text-xs font-semibold text-olive-800">{Math.round(completionScore)}%</span>
         </div>
 
-        <Card className="mt-5 flex min-h-0 flex-1 flex-col rounded-[2.5rem] border-stone-300/80 bg-amber-50/75 p-4 shadow-[0_24px_70px_rgba(120,96,62,0.16)] sm:p-6">
+        <Card className="mt-4 flex min-h-0 flex-1 flex-col rounded-[2.5rem] border-stone-300/80 bg-amber-50/75 p-4 shadow-[0_24px_70px_rgba(120,96,62,0.16)] sm:p-6">
           <div className="min-h-0 flex-1 overflow-auto rounded-[2rem] border border-stone-200 bg-[#fbf7ef] p-4 shadow-inner sm:p-6">
             {lastUser ? (
               <div className="mb-5 flex flex-row-reverse items-start gap-2">
@@ -361,8 +361,8 @@ export function IpProfileConversation() {
         </Card>
       </main>
 
-      <aside className="space-y-4">
-        <details className="rounded-[2rem] border border-stone-200 bg-card/90 p-4 shadow-[0_16px_36px_rgba(120,96,62,0.10)]">
+      <aside className="space-y-3">
+        <details className="rounded-[1.75rem] border border-stone-200 bg-card/75 p-3 shadow-[0_12px_28px_rgba(120,96,62,0.08)]">
           <summary className="cursor-pointer text-sm font-semibold">查看完整留档</summary>
           <div className="mt-4 max-h-72 space-y-2 overflow-auto text-sm">
             {(current?.messages || []).map((item) => (
@@ -374,13 +374,13 @@ export function IpProfileConversation() {
           </div>
         </details>
 
-        <details className="rounded-[2rem] border border-stone-200 bg-card/90 p-4 shadow-[0_16px_36px_rgba(120,96,62,0.10)]">
+        <details className="rounded-[1.75rem] border border-stone-200 bg-card/75 p-3 shadow-[0_12px_28px_rgba(120,96,62,0.08)]">
           <summary className="cursor-pointer text-sm font-semibold">编辑详细资料</summary>
           <div className="mt-4 flex items-center gap-2">
             <Pencil className="h-5 w-5 text-primary" />
             <CardTitle>资料展示与修改</CardTitle>
           </div>
-          <div className="mt-4 grid gap-3 md:grid-cols-2">
+          <div className="mt-4 grid gap-3">
             {textFields.map((field) => (
               <label key={field.key} className={field.key === "valueProposition" ? "space-y-1 text-sm md:col-span-2" : "space-y-1 text-sm"}>
                 <span className="text-muted-foreground">{field.label}</span>
@@ -392,7 +392,7 @@ export function IpProfileConversation() {
               </label>
             ))}
           </div>
-          <div className="mt-4 grid gap-3 md:grid-cols-2">
+          <div className="mt-4 grid gap-3">
             {arrayFields.map((field) => (
               <label key={field.key} className="space-y-1 text-sm">
                 <span className="text-muted-foreground">{field.label}</span>
