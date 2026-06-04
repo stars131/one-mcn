@@ -26,11 +26,11 @@ export const hotTopicSearchSchema = z.object({
   requirements: z.object({
     goal: z.string().default("找适合创作的热点"),
     audienceLevel: z.string().default("小白"),
-    timeRange: z.enum(["24h", "3d", "7d", "30d"]).default("24h"),
+    timeRange: z.enum(["24h", "3d", "7d"]).default("7d"),
     region: z.string().default("zh-CN"),
     hotness: z.enum(["breaking", "rising", "stable", "evergreen"]).default("rising"),
     riskTolerance: z.enum(["low", "medium", "high"]).default("low"),
-    count: z.number().int().positive().max(30).default(10)
+    count: z.number().int().positive().max(100).default(10)
   }).default({})
 });
 export const ipProfileSchema = z.object({

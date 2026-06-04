@@ -1,6 +1,6 @@
 # One MCN Handoff
 
-更新时间：2026-06-03
+更新时间：2026-06-04
 
 ## 项目位置
 
@@ -26,6 +26,15 @@ npm run prisma:push
 systemctl restart one-mcn
 git status --short
 ```
+
+## 技术栈
+
+- Next.js 14 App Router
+- React + TypeScript
+- Prisma + PostgreSQL
+- Tailwind CSS + 本地 UI 组件
+- Vitest + Next build 作为主要验证链路
+- systemd 管理本机服务
 
 ## 品牌与产品方向
 
@@ -91,9 +100,15 @@ git status --short
   - 可启用免费热点接口，也可花积分购买一天的付费热点接口
   - 热点雷达主流程：输入关键词、平台、内容类型、创作要求和人设，从外部热点 Agent 提取热点摘要并入库
   - 已新增统一热点搜索接口：`/api/hot-topics/search`
+  - 热点菜单已按 `/root/wlwl-hotspot-collector/docs/one-mcn-api.md` 适配 AI HOT 搜集工具
+  - 默认热点搜集工具地址：`http://127.0.0.1:4100`，未配置 `HOTSPOT_AGENT_BASE_URL` 时也会使用这个地址
+  - 热点菜单支持工具文档里的时间范围：`24h`、`3d`、`7d`
+  - 热点菜单返回数量选项：5、10、20、50；后端最大兼容热点工具的 100
+  - 已新增热点搜集工具健康检查 API：`/api/hot-topics/collector-health`
   - 外部热点 Agent 对接文档：`docs/hotspot-agent-api.md`
+  - 热点菜单使用文档：`docs/hotspot-menu-usage.md`
   - 外部 Agent 配置：`HOTSPOT_AGENT_BASE_URL`、`HOTSPOT_AGENT_API_KEY`、`HOTSPOT_AGENT_TIMEOUT_MS`
-  - 未配置外部 Agent 时，搜索接口会在本项目本地热点库做关键词兜底匹配
+  - 外部热点搜集工具不可用时，搜索接口会在本项目本地热点库做关键词兜底匹配
   - 热点可一键根据热点 + 人设生成内容初稿
 - 选题：
   - 已改成对话式入口
@@ -123,7 +138,9 @@ git status --short
 - 热点访问组件：`components/hotspot-access-panel.tsx`
 - 热点搜索 workflow：`lib/workflows/search-hot-topics.ts`
 - 外部热点 Agent 接口文档：`docs/hotspot-agent-api.md`
+- 热点菜单使用文档：`docs/hotspot-menu-usage.md`
 - 热点搜索 API：`app/api/hot-topics/search/route.ts`
+- 热点搜集工具健康检查 API：`app/api/hot-topics/collector-health/route.ts`
 - 热点一键生成内容 API：`app/api/hot-topics/[id]/generate-content/route.ts`
 - 选题对话页组件：`components/topics-workbench.tsx`
 - 分析页组件：`components/analytics-dashboard.tsx`
@@ -173,6 +190,9 @@ AI_TEXT_MODEL="deepseek-v4-pro"
 AI_MULTIMODAL_MODEL="deepseek-v4-pro"
 AI_IMAGE_MODEL="deepseek-v4-pro"
 ADMIN_EMAILS="demo@one-mcn.local"
+HOTSPOT_AGENT_BASE_URL="http://127.0.0.1:4100"
+HOTSPOT_AGENT_API_KEY=""
+HOTSPOT_AGENT_TIMEOUT_MS="30000"
 ```
 
 ## 演示账号
@@ -205,6 +225,8 @@ systemctl restart one-mcn
 - 三类独立模型配置保存
 - 免费热点启用
 - 热点访问状态
+- 热点搜集工具健康检查：`/api/hot-topics/collector-health` 返回 `mode: external`
+- 热点搜索：`/api/hot-topics/search` 已按 `OpenAI` 关键词调用 AI HOT，并成功入库 3 条热点
 
 ## 下一步建议
 

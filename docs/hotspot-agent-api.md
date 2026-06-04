@@ -6,7 +6,7 @@
 
 - 本项目入口：`POST /api/hot-topics/search`
 - 外部热点 Agent 需要实现：`POST /api/hotspot-agent/search`
-- 本项目配置 `HOTSPOT_AGENT_BASE_URL` 后，会调用：
+- 本项目默认使用 `http://127.0.0.1:4100`。配置 `HOTSPOT_AGENT_BASE_URL` 后，会调用：
 
 ```text
 ${HOTSPOT_AGENT_BASE_URL}/api/hotspot-agent/search
@@ -61,10 +61,10 @@ Content-Type: application/json
 - `contentTypes`：内容类型数组，例如图文、短视频、长文、帖子、教程。
 - `persona`：当前人设摘要，可能为空。外部 Agent 应用它判断热点是否适合用户。
 - `requirements.goal`：用户本轮需求。
-- `requirements.timeRange`：`24h`、`3d`、`7d`、`30d`。
+- `requirements.timeRange`：`24h`、`3d`、`7d`。
 - `requirements.hotness`：`breaking`、`rising`、`stable`、`evergreen`。
 - `requirements.riskTolerance`：`low`、`medium`、`high`。
-- `requirements.count`：期望返回条数，最大 30。
+- `requirements.count`：期望返回条数，最大 100；热点菜单默认 10。
 
 ## 成功响应
 

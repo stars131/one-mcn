@@ -17,19 +17,22 @@ export function HotTopicsWorkbench() {
   const [contentType, setContentType] = useState("图文");
   const [keyword, setKeyword] = useState("");
   const [requirement, setRequirement] = useState("找适合今天创作的热点");
-  const [timeRange, setTimeRange] = useState("24h");
-  const [hotness, setHotness] = useState("rising");
+  const [timeRange, setTimeRange] = useState("7d");
+  const [count, setCount] = useState(10);
+  const [collectorHealth, setCollectorHealth] = useState<{ ok: boolean; baseUrl?: string; mode?: string } | null>(null);
   const [searching, setSearching] = useState(false);
   const [message, setMessage] = useState("");
 
   async function load() {
-    const [topicsData, profilesData] = await Promise.all([
+    const [topicsData, profilesData, healthData] = await Promise.all([
       fetch("/api/hot-topics").then((r) => r.json()),
-      fetch("/api/ip-profiles").then((r) => r.json())
+      fetch("/api/ip-profiles").then((r) => r.json()),
+      fetch("/api/hot-topics/collector-health").then((r) => r.json()).catch(() => null)
     ]);
     const sourcesData = await fetch("/api/sources").then((r) => r.json());
     setItems(topicsData);
     setProfiles(profilesData);
+    setCollectorHealth(healthData);
     setSources(sourcesData.filter((source: any) => source.type === "hot_feed"));
     setProfileId((current) => current || profilesData[0]?.id || "");
   }
@@ -77,9 +80,9 @@ export function HotTopicsWorkbench() {
             audienceLevel: profile?.targetAudience ? "按当前人设" : "小白",
             timeRange,
             region: "zh-CN",
-            hotness,
+            hotness: "rising",
             riskTolerance: "low",
-            count: 10
+            count
           }
         })
       });
@@ -113,7 +116,7 @@ export function HotTopicsWorkbench() {
     <div className="space-y-5">
       <div>
         <h1 className="text-2xl font-semibold">热点雷达</h1>
-        <p className="mt-1 text-sm text-muted-foreground">输入关键词和创作要求，从热点 Agent 提取适合当前人设的热点摘要。</p>
+        <p className="mt-1 text-sm text-muted-foreground">输入关键词和创作要求，从 AI HOT 提取适合当前人设的热点摘要。</p>
       </div>
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_260px]">
         <Card className="rounded-[2.25rem] border-stone-300/80 bg-amber-50/75 shadow-[0_24px_70px_rgba(120,96,62,0.14)]">
@@ -146,16 +149,15 @@ export function HotTopicsWorkbench() {
                 <option value="24h">近 24 小时</option>
                 <option value="3d">近 3 天</option>
                 <option value="7d">近 7 天</option>
-                <option value="30d">近 30 天</option>
               </Select>
             </label>
             <label className="space-y-1 text-sm">
-              <span className="text-muted-foreground">热度偏好</span>
-              <Select value={hotness} onChange={(e) => setHotness(e.target.value)}>
-                <option value="rising">上升中</option>
-                <option value="breaking">突发</option>
-                <option value="stable">稳定热</option>
-                <option value="evergreen">长尾</option>
+              <span className="text-muted-foreground">返回数量</span>
+              <Select value={String(count)} onChange={(e) => setCount(Number(e.target.value))}>
+                <option value="5">5 条</option>
+                <option value="10">10 条</option>
+                <option value="20">20 条</option>
+                <option value="50">50 条</option>
               </Select>
             </label>
           </div>
@@ -178,12 +180,16 @@ export function HotTopicsWorkbench() {
         <details className="rounded-[1.75rem] border border-stone-200 bg-card/75 p-3 shadow-[0_12px_28px_rgba(120,96,62,0.08)]">
           <summary className="cursor-pointer text-sm font-semibold">热点来源</summary>
           <div className="mt-3 space-y-3">
+            <div className={collectorHealth?.ok ? "rounded-[1.25rem] border border-olive-700/15 bg-olive-50 p-3 text-xs text-olive-900" : "rounded-[1.25rem] border border-amber-700/15 bg-amber-50 p-3 text-xs text-stone-700"}>
+              <p className="font-semibold">{collectorHealth?.ok ? "AI HOT 已连接" : "AI HOT 未连接，本地兜底"}</p>
+              <p className="mt-1 opacity-75">{collectorHealth?.ok ? "可直接提取最新热点" : "仍可搜索已入库热点"}</p>
+            </div>
             <HotspotAccessPanel compact />
             <Button variant="outline" className="h-9 w-full text-xs" onClick={refreshHotspots}>
               <RefreshCw className="h-3.5 w-3.5" />
               更新已有来源
             </Button>
-            <p className="text-xs leading-5 text-muted-foreground">后续主流程优先调用外部热点 Agent；这里仅保留接口启用和手动刷新。</p>
+            <p className="text-xs leading-5 text-muted-foreground">主流程优先使用 AI HOT 搜集服务；不可用时保留本地热点库兜底。</p>
           </div>
         </details>
       </div>

@@ -2,6 +2,8 @@ import { getCurrentOperatingAccountId } from "@/lib/accounts/current-account";
 import { getDefaultUserId } from "@/lib/db/default-user";
 import { prisma } from "@/lib/db/prisma";
 
+export const DEFAULT_HOTSPOT_AGENT_BASE_URL = "http://127.0.0.1:4100";
+
 type PersonaPayload = {
   profileId?: string;
   name?: string;
@@ -22,7 +24,7 @@ type HotTopicSearchInput = {
   requirements: {
     goal: string;
     audienceLevel: string;
-    timeRange: "24h" | "3d" | "7d" | "30d";
+    timeRange: "24h" | "3d" | "7d";
     region: string;
     hotness: "breaking" | "rising" | "stable" | "evergreen";
     riskTolerance: "low" | "medium" | "high";
@@ -49,6 +51,7 @@ type ExternalHotTopicItem = {
   riskNotes?: string[];
   contentAngles?: { title: string; contentType?: string; hook?: string; outline?: string[] }[];
   recommendedAction?: string;
+  rawData?: Record<string, unknown>;
 };
 
 type ExternalHotTopicResponse = {
@@ -89,7 +92,7 @@ async function getPersona(input: HotTopicSearchInput, userId: string, operatingA
 }
 
 async function callExternalHotspotAgent(input: HotTopicSearchInput, persona?: PersonaPayload): Promise<ExternalHotTopicResponse | null> {
-  const baseUrl = process.env.HOTSPOT_AGENT_BASE_URL?.replace(/\/$/, "");
+  const baseUrl = (process.env.HOTSPOT_AGENT_BASE_URL || DEFAULT_HOTSPOT_AGENT_BASE_URL).replace(/\/$/, "");
   if (!baseUrl) return null;
   const timeoutMs = Number(process.env.HOTSPOT_AGENT_TIMEOUT_MS || 30000);
   const controller = new AbortController();
@@ -195,7 +198,8 @@ export async function searchHotTopicsWorkflow(input: HotTopicSearchInput) {
   const userId = await getDefaultUserId();
   const operatingAccountId = await getCurrentOperatingAccountId(userId);
   const persona = await getPersona(input, userId, operatingAccountId);
-  const external = (await callExternalHotspotAgent(input, persona)) || (await searchLocalHotTopics(input, userId, operatingAccountId));
+  let external = await callExternalHotspotAgent(input, persona).catch(() => null);
+  if (!external) external = await searchLocalHotTopics(input, userId, operatingAccountId);
   const validItems = (external.items || []).filter((item) => item.title?.trim()).slice(0, input.requirements.count);
   const items = [];
   let createdCount = 0;
@@ -212,7 +216,7 @@ export async function searchHotTopicsWorkflow(input: HotTopicSearchInput) {
   }
   return {
     querySummary: external.querySummary || `围绕“${input.keyword}”筛选适合创作的热点。`,
-    source: external.source || { name: process.env.HOTSPOT_AGENT_BASE_URL ? "外部热点 Agent" : "本地热点库", fetchedAt: new Date().toISOString() },
+    source: external.source || { name: "热点搜集工具", url: process.env.HOTSPOT_AGENT_BASE_URL || DEFAULT_HOTSPOT_AGENT_BASE_URL, fetchedAt: new Date().toISOString() },
     createdCount,
     totalCount: items.length,
     items
