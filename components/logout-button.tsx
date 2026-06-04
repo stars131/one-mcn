@@ -14,7 +14,7 @@ export function LogoutButton() {
   }
 
   return (
-    <Button variant="ghost" className="w-full justify-start px-3 text-muted-foreground" onClick={logout}>
+    <Button variant="ghost" className="px-3 text-muted-foreground" onClick={logout}>
       <LogOut className="h-4 w-4" />
       退出登录
     </Button>

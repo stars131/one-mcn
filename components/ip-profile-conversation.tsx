@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Bot, History, Pencil, Plus, Save, Sparkles, UserRound } from "lucide-react";
+import { Bot, ChevronLeft, ChevronRight, History, Pencil, Plus, Save, Sparkles, UserRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardTitle } from "@/components/ui/card";
 import { Input, Textarea } from "@/components/ui/input";
@@ -133,6 +133,7 @@ export function IpProfileConversation() {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(true);
 
   async function loadConversations(selectId?: string) {
     setLoading(true);
@@ -253,18 +254,25 @@ export function IpProfileConversation() {
   const prompt = lastAssistant?.content || current?.currentPrompt || "我们先从一个方向开始。";
 
   return (
-    <div className="grid min-h-[calc(100vh-118px)] gap-5 lg:grid-cols-[280px_minmax(0,1fr)]">
+    <div className={historyOpen ? "grid min-h-[calc(100vh-7rem)] gap-5 lg:grid-cols-[280px_minmax(0,1fr)_320px]" : "grid min-h-[calc(100vh-7rem)] gap-5 lg:grid-cols-[44px_minmax(0,1fr)_320px]"}>
       <aside className="rounded-[2rem] border border-stone-200 bg-card/85 p-3 shadow-[0_16px_36px_rgba(120,96,62,0.10)]">
         <div className="flex items-center justify-between gap-2 px-2 py-2">
-          <div className="flex items-center gap-2">
+          <div className={historyOpen ? "flex items-center gap-2" : "hidden"}>
             <History className="h-4 w-4 text-olive-700" />
             <span className="text-sm font-semibold">人设对话</span>
           </div>
-          <Button variant="ghost" onClick={newConversation}>
-            <Plus className="h-4 w-4" />
-          </Button>
+          <div className="flex items-center gap-1">
+            {historyOpen ? (
+              <Button variant="ghost" onClick={newConversation}>
+                <Plus className="h-4 w-4" />
+              </Button>
+            ) : null}
+            <Button variant="ghost" onClick={() => setHistoryOpen((value) => !value)}>
+              {historyOpen ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+            </Button>
+          </div>
         </div>
-        <div className="mt-2 space-y-1">
+        <div className={historyOpen ? "mt-2 space-y-1" : "hidden"}>
           {conversations.map((item) => (
             <button
               key={item.id}
@@ -280,7 +288,7 @@ export function IpProfileConversation() {
         </div>
       </aside>
 
-      <main className="space-y-5">
+      <main className="flex min-h-[calc(100vh-7rem)] flex-col">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <h1 className="text-2xl font-semibold">人设</h1>
@@ -289,8 +297,8 @@ export function IpProfileConversation() {
           <span className="rounded-[999px] bg-white/70 px-3 py-1 text-xs font-semibold text-olive-800">{Math.round(completionScore)}%</span>
         </div>
 
-        <Card className="rounded-[2.5rem] border-stone-300/80 bg-amber-50/75 p-4 shadow-[0_24px_70px_rgba(120,96,62,0.16)] sm:p-6">
-          <div className="min-h-[520px] rounded-[2rem] border border-stone-200 bg-[#fbf7ef] p-4 shadow-inner sm:p-6">
+        <Card className="mt-5 flex min-h-0 flex-1 flex-col rounded-[2.5rem] border-stone-300/80 bg-amber-50/75 p-4 shadow-[0_24px_70px_rgba(120,96,62,0.16)] sm:p-6">
+          <div className="min-h-0 flex-1 overflow-auto rounded-[2rem] border border-stone-200 bg-[#fbf7ef] p-4 shadow-inner sm:p-6">
             {lastUser ? (
               <div className="mb-5 flex flex-row-reverse items-start gap-2">
                 <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[38%_62%_44%_56%/52%_38%_62%_48%] border border-stone-200 bg-amber-50">
@@ -332,24 +340,28 @@ export function IpProfileConversation() {
             ))}
           </div>
 
-          <Textarea
-            className="mt-3 min-h-28 bg-white/80"
-            value={input}
-            placeholder="回答当前问题..."
-            onChange={(event) => setInput(event.target.value)}
-            onKeyDown={(event) => {
-              if ((event.metaKey || event.ctrlKey) && event.key === "Enter") sendToPersonaAgent(input);
-            }}
-          />
-          <div className="mt-4 flex flex-wrap items-center gap-3 px-1">
-            <Button onClick={() => sendToPersonaAgent(input)} disabled={sending || !input.trim() || !current}>
-              <Sparkles className="h-4 w-4" />
-              {sending ? "生成下一问" : "发送"}
-            </Button>
-            <span className="text-sm text-muted-foreground">{message}</span>
+          <div className="mt-3 shrink-0">
+            <Textarea
+              className="min-h-24 bg-white/80"
+              value={input}
+              placeholder="回答当前问题..."
+              onChange={(event) => setInput(event.target.value)}
+              onKeyDown={(event) => {
+                if ((event.metaKey || event.ctrlKey) && event.key === "Enter") sendToPersonaAgent(input);
+              }}
+            />
+            <div className="mt-4 flex flex-wrap items-center gap-3 px-1">
+              <Button onClick={() => sendToPersonaAgent(input)} disabled={sending || !input.trim() || !current}>
+                <Sparkles className="h-4 w-4" />
+                {sending ? "生成下一问" : "发送"}
+              </Button>
+              <span className="text-sm text-muted-foreground">{message}</span>
+            </div>
           </div>
         </Card>
+      </main>
 
+      <aside className="space-y-4">
         <details className="rounded-[2rem] border border-stone-200 bg-card/90 p-4 shadow-[0_16px_36px_rgba(120,96,62,0.10)]">
           <summary className="cursor-pointer text-sm font-semibold">查看完整留档</summary>
           <div className="mt-4 max-h-72 space-y-2 overflow-auto text-sm">
@@ -418,7 +430,7 @@ export function IpProfileConversation() {
             </Button>
           </div>
         </details>
-      </main>
+      </aside>
     </div>
   );
 }
