@@ -96,6 +96,8 @@ ${input.note}
 3. patch 只写可以从上下文合理得出的字段；数组字段要累积，不要覆盖掉已有价值信息。
 4. 如果关键字段已经较完整，可以给“采用当前人设初稿”“更专业”“更真实口语”“更适合小红书/抖音/公众号”等选项。
 5. notes 要包含本轮用户选择或输入的简短事实，便于长期沉淀。
+6. completion.score 是整个人设建立进度，不是本轮回答质量；请根据 identity/name、niche、targetAudience、userPainPoints、valueProposition、toneStyle、platforms、monetizationGoals、keywords、boundary/blockedTopics 这些流程项综合判断。
+7. completion.missing 只列还会阻碍开始创作的关键缺口；当 score >= 90 时，assistantMessage 应该明确提示人设已基本确定，可以开始创作，也可以继续微调。
 
 输出格式：
 {"assistantMessage":"","options":[{"label":"","value":"","description":""}],"agents":{"identity":{},"audience":{},"platform":{},"value":{},"monetization":{},"boundary":{}},"patch":{"name":"","niche":"","targetAudience":"","userPainPoints":[],"valueProposition":"","toneStyle":"","platforms":[],"monetizationGoals":[],"keywords":[],"competitors":[],"blockedTopics":[],"notes":[]},"completion":{"score":0,"missing":[]},"nextQuestions":[]}`

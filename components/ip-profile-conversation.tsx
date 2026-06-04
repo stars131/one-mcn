@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Bot, ChevronLeft, ChevronRight, History, Pencil, Plus, Save, Sparkles, UserRound } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardTitle } from "@/components/ui/card";
 import { Input, Textarea } from "@/components/ui/input";
@@ -125,7 +126,32 @@ function lastByRole(messages: PersonaMessage[] | undefined, role: "assistant" | 
   return [...(messages || [])].reverse().find((message) => message.role === role);
 }
 
+function fieldReady(value: unknown) {
+  if (Array.isArray(value)) return value.filter(Boolean).length > 0;
+  return typeof value === "string" && value.trim().length > 0;
+}
+
+function calculatePersonaProgress(profile: IpProfile, agentScore: number, missing: string[]) {
+  const checks = [
+    fieldReady(profile.name) && profile.name !== "小八的人设",
+    fieldReady(profile.niche),
+    fieldReady(profile.targetAudience),
+    fieldReady(profile.userPainPoints),
+    fieldReady(profile.valueProposition),
+    fieldReady(profile.toneStyle),
+    fieldReady(profile.platforms),
+    fieldReady(profile.monetizationGoals),
+    fieldReady(profile.keywords),
+    fieldReady(profile.blockedTopics) || fieldReady(profile.competitors) || profile.notes.length >= 4
+  ];
+  const profileScore = Math.round((checks.filter(Boolean).length / checks.length) * 100);
+  const guidedScore = agentScore > 0 ? Math.round(profileScore * 0.65 + agentScore * 0.35) : profileScore;
+  const missingPenalty = Math.min(missing.length * 4, 20);
+  return Math.max(0, Math.min(100, guidedScore - missingPenalty));
+}
+
 export function IpProfileConversation() {
+  const router = useRouter();
   const [conversations, setConversations] = useState<PersonaConversation[]>([]);
   const [current, setCurrent] = useState<PersonaConversation | null>(null);
   const [draft, setDraft] = useState<IpProfile>(emptyProfile());
@@ -250,7 +276,10 @@ export function IpProfileConversation() {
   const lastUser = lastByRole(current?.messages, "user");
   const lastAssistant = lastByRole(current?.messages, "assistant");
   const currentOptions = Array.isArray(current?.options) && current?.options?.length ? current.options : starterOptions;
-  const completionScore = Number(current?.completion?.score || 0);
+  const agentScore = Math.max(0, Math.min(100, Number(current?.completion?.score || 0)));
+  const missingItems = Array.isArray(current?.completion?.missing) ? current.completion.missing : [];
+  const completionScore = calculatePersonaProgress(draft, agentScore, missingItems);
+  const personaReady = completionScore >= 90 && missingItems.length <= 1;
   const prompt = lastAssistant?.content || current?.currentPrompt || "我们先从一个方向开始。";
 
   return (
@@ -259,7 +288,7 @@ export function IpProfileConversation() {
         <div className="flex items-center justify-between gap-2 px-2 py-2">
           <div className={historyOpen ? "flex items-center gap-2" : "hidden"}>
             <History className="h-4 w-4 text-olive-700" />
-            <span className="text-sm font-semibold">人设对话</span>
+            <span className="whitespace-nowrap text-sm font-semibold">对话历史</span>
           </div>
           <div className="flex items-center gap-1">
             {historyOpen ? (
@@ -291,10 +320,17 @@ export function IpProfileConversation() {
       <main className="flex min-h-[calc(100vh-7rem)] flex-col">
         <div className="flex flex-wrap items-start justify-between gap-3 px-2">
           <div>
-            <h1 className="text-2xl font-semibold">人设</h1>
-            <p className="mt-1 text-sm text-muted-foreground/80">旧对话自动留档，当前只显示上一轮回答和下一问。</p>
+            <h1 className="text-2xl font-semibold">{personaReady ? "人设已建立！" : "人设建立中"}</h1>
           </div>
-          <span className="rounded-[999px] bg-white/70 px-3 py-1 text-xs font-semibold text-olive-800">{Math.round(completionScore)}%</span>
+          <div className="min-w-28 rounded-[999px] bg-white/70 px-3 py-1.5 text-xs font-semibold text-olive-800">
+            <div className="flex items-center justify-between gap-2">
+              <span>人设进度</span>
+              <span>{Math.round(completionScore)}%</span>
+            </div>
+            <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-stone-200">
+              <div className="h-full rounded-full bg-olive-600 transition-all" style={{ width: `${completionScore}%` }} />
+            </div>
+          </div>
         </div>
 
         <Card className="mt-4 flex min-h-0 flex-1 flex-col rounded-[2.5rem] border-stone-300/80 bg-amber-50/75 p-4 shadow-[0_24px_70px_rgba(120,96,62,0.16)] sm:p-6">
@@ -323,6 +359,16 @@ export function IpProfileConversation() {
               <div className="mt-5 flex items-center gap-2 text-sm text-muted-foreground">
                 <Sparkles className="h-4 w-4 animate-pulse" />
                 人设 Agent 正在思考下一步问题...
+              </div>
+            ) : null}
+
+            {personaReady ? (
+              <div className="mt-5 rounded-[1.75rem] border border-olive-700/15 bg-olive-50 p-4">
+                <p className="text-sm font-semibold text-olive-900">当前人设已经可以用于创作。现在要去创作内容吗？</p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <Button onClick={() => router.push("/contents")}>去创作</Button>
+                  <Button variant="outline" onClick={() => setMessage("可以继续回答下一问，我会把补充内容累积到人设里。")}>继续完善</Button>
+                </div>
               </div>
             ) : null}
           </div>
@@ -364,7 +410,7 @@ export function IpProfileConversation() {
       <aside className="space-y-3">
         <details className="rounded-[1.75rem] border border-stone-200 bg-card/75 p-3 shadow-[0_12px_28px_rgba(120,96,62,0.08)]">
           <summary className="cursor-pointer text-sm font-semibold">查看完整留档</summary>
-          <div className="mt-4 max-h-72 space-y-2 overflow-auto text-sm">
+          <div className="mt-4 max-h-[calc(100vh-13rem)] space-y-2 overflow-y-auto pr-1 text-sm">
             {(current?.messages || []).map((item) => (
               <div key={item.id} className="rounded-[1.25rem] bg-amber-50 p-3">
                 <p className="text-xs text-muted-foreground">{item.role === "assistant" ? "Agent" : "我"}</p>
@@ -376,58 +422,60 @@ export function IpProfileConversation() {
 
         <details className="rounded-[1.75rem] border border-stone-200 bg-card/75 p-3 shadow-[0_12px_28px_rgba(120,96,62,0.08)]">
           <summary className="cursor-pointer text-sm font-semibold">编辑详细资料</summary>
-          <div className="mt-4 flex items-center gap-2">
-            <Pencil className="h-5 w-5 text-primary" />
-            <CardTitle>资料展示与修改</CardTitle>
-          </div>
-          <div className="mt-4 grid gap-3">
-            {textFields.map((field) => (
-              <label key={field.key} className={field.key === "valueProposition" ? "space-y-1 text-sm md:col-span-2" : "space-y-1 text-sm"}>
-                <span className="text-muted-foreground">{field.label}</span>
-                {field.key === "valueProposition" ? (
-                  <Textarea value={String(draft[field.key] || "")} placeholder={field.placeholder} onChange={(event) => updateField(field.key, event.target.value)} />
-                ) : (
-                  <Input value={String(draft[field.key] || "")} placeholder={field.placeholder} onChange={(event) => updateField(field.key, event.target.value)} />
-                )}
-              </label>
-            ))}
-          </div>
-          <div className="mt-4 grid gap-3">
-            {arrayFields.map((field) => (
-              <label key={field.key} className="space-y-1 text-sm">
-                <span className="text-muted-foreground">{field.label}</span>
-                {field.key === "platforms" ? (
-                  <div className="flex min-h-24 flex-wrap content-start gap-2 rounded-[1.5rem] border border-stone-200 bg-amber-50/70 p-2">
-                    {platformLabels.map((platform) => {
-                      const active = draft.platforms.includes(platform);
-                      return (
-                        <button
-                          key={platform}
-                          type="button"
-                          className={active ? "rounded-[999px] border border-olive-700/20 bg-olive-100 px-3 py-2 text-sm font-semibold text-olive-800" : "rounded-[999px] border border-stone-200 bg-white px-3 py-2 text-sm font-semibold text-stone-700"}
-                          onClick={() => togglePlatform(platform)}
-                        >
-                          {platform}
-                        </button>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <Textarea
-                    className="min-h-24"
-                    value={(draft[field.key] as string[]).join("，")}
-                    placeholder={field.placeholder}
-                    onChange={(event) => updateArrayField(field.key, event.target.value)}
-                  />
-                )}
-              </label>
-            ))}
-          </div>
-          <div className="mt-4 flex flex-wrap items-center gap-3">
-            <Button onClick={saveDraft} disabled={!draft.id}>
-              <Save className="h-4 w-4" />
-              保存修改
-            </Button>
+          <div className="mt-4 max-h-[calc(100vh-13rem)] overflow-y-auto pr-1">
+            <div className="flex items-center gap-2">
+              <Pencil className="h-5 w-5 text-primary" />
+              <CardTitle>资料展示与修改</CardTitle>
+            </div>
+            <div className="mt-4 grid gap-3">
+              {textFields.map((field) => (
+                <label key={field.key} className={field.key === "valueProposition" ? "space-y-1 text-sm md:col-span-2" : "space-y-1 text-sm"}>
+                  <span className="text-muted-foreground">{field.label}</span>
+                  {field.key === "valueProposition" ? (
+                    <Textarea value={String(draft[field.key] || "")} placeholder={field.placeholder} onChange={(event) => updateField(field.key, event.target.value)} />
+                  ) : (
+                    <Input value={String(draft[field.key] || "")} placeholder={field.placeholder} onChange={(event) => updateField(field.key, event.target.value)} />
+                  )}
+                </label>
+              ))}
+            </div>
+            <div className="mt-4 grid gap-3">
+              {arrayFields.map((field) => (
+                <label key={field.key} className="space-y-1 text-sm">
+                  <span className="text-muted-foreground">{field.label}</span>
+                  {field.key === "platforms" ? (
+                    <div className="flex min-h-24 flex-wrap content-start gap-2 rounded-[1.5rem] border border-stone-200 bg-amber-50/70 p-2">
+                      {platformLabels.map((platform) => {
+                        const active = draft.platforms.includes(platform);
+                        return (
+                          <button
+                            key={platform}
+                            type="button"
+                            className={active ? "rounded-[999px] border border-olive-700/20 bg-olive-100 px-3 py-2 text-sm font-semibold text-olive-800" : "rounded-[999px] border border-stone-200 bg-white px-3 py-2 text-sm font-semibold text-stone-700"}
+                            onClick={() => togglePlatform(platform)}
+                          >
+                            {platform}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <Textarea
+                      className="min-h-24"
+                      value={(draft[field.key] as string[]).join("，")}
+                      placeholder={field.placeholder}
+                      onChange={(event) => updateArrayField(field.key, event.target.value)}
+                    />
+                  )}
+                </label>
+              ))}
+            </div>
+            <div className="mt-4 flex flex-wrap items-center gap-3">
+              <Button onClick={saveDraft} disabled={!draft.id}>
+                <Save className="h-4 w-4" />
+                保存修改
+              </Button>
+            </div>
           </div>
         </details>
       </aside>
