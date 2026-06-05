@@ -164,7 +164,7 @@ export function ContentAgentWorkbench() {
       </div>
 
       <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_440px]">
-        <Card className="sticky top-20 flex max-h-[calc(100vh-6rem)] min-h-[calc(100vh-9rem)] flex-col rounded-[2.5rem] border-stone-300/80 bg-amber-50/75 shadow-[0_24px_70px_rgba(120,96,62,0.14)]">
+        <Card className="sticky top-20 flex h-[calc(100vh-13rem)] flex-col rounded-[2.5rem] border-stone-300/80 bg-amber-50/75 shadow-[0_24px_70px_rgba(120,96,62,0.14)]">
           <div className="shrink-0 rounded-[2rem] border border-stone-200 bg-white/70 p-3 shadow-[0_12px_28px_rgba(120,96,62,0.08)]">
             <div className="grid gap-3 md:grid-cols-2">
               <label className="space-y-1 text-sm">
