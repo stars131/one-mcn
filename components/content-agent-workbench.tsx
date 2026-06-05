@@ -180,33 +180,6 @@ export function ContentAgentWorkbench() {
                 </Select>
               </label>
             </div>
-            <div className="mt-3">
-              <Textarea
-                className="min-h-20 bg-white/80"
-                value={input}
-                placeholder="告诉内容 Agent 你想创作什么..."
-                onChange={(event) => setInput(event.target.value)}
-                onKeyDown={(event) => {
-                  if ((event.metaKey || event.ctrlKey) && event.key === "Enter") send(input);
-                }}
-              />
-              <div className="mt-3 flex flex-wrap gap-2">
-                <Button onClick={() => send(input)} disabled={loading || !input.trim()}>
-                  {loading ? <LoadingDots /> : <Send className="h-4 w-4" />}
-                  发送
-                </Button>
-                {options.map((option) => (
-                  <button
-                    key={`${option.label}-${option.value}`}
-                    type="button"
-                    className="rounded-[999px] border border-stone-200 bg-amber-50 px-3 py-1.5 text-left text-xs font-semibold text-stone-600 transition hover:bg-amber-100 hover:text-stone-800"
-                    onClick={() => send(option.value)}
-                  >
-                    {option.label}
-                  </button>
-                ))}
-              </div>
-            </div>
           </div>
 
           <div className="mt-4 min-h-0 flex-1 overflow-auto rounded-[2rem] border border-stone-200 bg-[#fbf7ef] p-4 shadow-inner">
@@ -224,16 +197,50 @@ export function ContentAgentWorkbench() {
               <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[38%_62%_44%_56%/52%_38%_62%_48%] border border-stone-200 bg-amber-50">
                 <Bot className="h-4 w-4" />
               </span>
-              <div className="max-w-[86%] rounded-[1.75rem] border border-stone-200 bg-white/90 px-4 py-3 text-sm leading-6 shadow-[0_8px_24px_rgba(120,96,62,0.06)]">
-                {loading ? (
-                  <span className="flex items-center gap-2">
-                    <Sparkles className="h-4 w-4 animate-pulse" />
-                    正在生成预览 <LoadingDots />
-                  </span>
-                ) : (
-                  lastAssistant?.content
-                )}
+              <div className="max-w-[86%]">
+                <div className="rounded-[1.75rem] border border-stone-200 bg-white/90 px-4 py-3 text-sm leading-6 shadow-[0_8px_24px_rgba(120,96,62,0.06)]">
+                  {loading ? (
+                    <span className="flex items-center gap-2">
+                      <Sparkles className="h-4 w-4 animate-pulse" />
+                      正在生成预览 <LoadingDots />
+                    </span>
+                  ) : (
+                    lastAssistant?.content
+                  )}
+                </div>
+                {!loading ? (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {options.map((option) => (
+                      <button
+                        key={`${option.label}-${option.value}`}
+                        type="button"
+                        className="rounded-[999px] border border-stone-200 bg-white/65 px-3 py-1.5 text-left text-xs font-semibold text-stone-600 transition hover:bg-amber-100 hover:text-stone-800"
+                        onClick={() => send(option.value)}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
               </div>
+            </div>
+          </div>
+
+          <div className="mt-4 shrink-0 rounded-[2rem] border border-stone-200 bg-white/75 p-3 shadow-[0_12px_28px_rgba(120,96,62,0.08)]">
+            <Textarea
+              className="min-h-20 bg-white/80"
+              value={input}
+              placeholder="告诉内容 Agent 你想创作什么..."
+              onChange={(event) => setInput(event.target.value)}
+              onKeyDown={(event) => {
+                if ((event.metaKey || event.ctrlKey) && event.key === "Enter") send(input);
+              }}
+            />
+            <div className="mt-3 flex justify-end">
+              <Button onClick={() => send(input)} disabled={loading || !input.trim()}>
+                {loading ? <LoadingDots /> : <Send className="h-4 w-4" />}
+                发送
+              </Button>
             </div>
           </div>
         </Card>
